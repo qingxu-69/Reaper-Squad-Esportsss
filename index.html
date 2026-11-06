@@ -47,7 +47,7 @@ let currentUser=null,isAdmin=false,teams=[],matches=[],selectedTeams=[];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),pts=p=>PLACE_POINTS[Number(p)]||0;
 function err(e){alert("操作失败："+(e?.message||e))}
 window.showTab=id=>{document.querySelectorAll("main>section[id$='Tab']").forEach(x=>x.classList.add("hidden"));$(id+"Tab").classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id))};
-window.signIn=async()=>{try{await signInWithRedirect(auth,new GoogleAuthProvider())}catch(e){err(e)}};
+window.signIn=async()=>{try{await setPersistence(auth,browserLocalPersistence);await signInWithRedirect(auth,new GoogleAuthProvider())}catch(e){err(e)}};
 window.signOutUser=async()=>{try{await signOut(auth)}catch(e){err(e)}};
 try{await getRedirectResult(auth)}catch(e){console.warn(e)}
 onAuthStateChanged(auth,async u=>{currentUser=u;isAdmin=!!u&&u.uid===ADMIN_UID;alert("邮箱："+(u?.email||"没有登录")+"\nUID："+(u?.uid||"没有UID")+"\n管理员UID："+ADMIN_UID);$("userLabel").textContent=u?(u.displayName||u.email||"已登录"):"访客模式";$("loginBtn").classList.toggle("hidden",!!u);$("logoutBtn").classList.toggle("hidden",!u);$("adminGate").classList.toggle("hidden",isAdmin);$("adminPanel").classList.toggle("hidden",!isAdmin);await loadAll()});
