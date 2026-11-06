@@ -26,7 +26,7 @@ nav{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}nav button{background:#111
 <section class="hero"><div class="eyebrow">COMPETITIVE RECORDS</div><h2>比赛数据中心</h2><p class="muted">五局赛制 · PMGC 积分 · 实时排行榜</p></section>
 <div class="stats"><div class="stat"><b id="statMatches">0</b><span>比赛场次（赛事）</span></div><div class="stat"><b id="statTeams">0</b><span>参赛队伍</span></div><div class="stat"><b id="statKills">0</b><span>总淘汰</span></div></div>
 <nav><button class="active" data-tab="board" onclick="showTab('board')">排行榜</button><button data-tab="matches" onclick="showTab('matches')">比赛记录</button><button data-tab="teams" onclick="showTab('teams')">队伍名单</button><button data-tab="admin" onclick="showTab('admin')">管理中心</button></nav>
-<section id="boardTab"><div class="panel"><h3>赛季排行榜</h3><div class="notice score-note">PMGC 官方排名分：第 1 名 10 分、第 2 名 6 分、第 3 名 5 分、第 4 名 4 分、第 5 名 3 分、第 6 名 2 分、第 7–8 名 1 分、第 9–16 名 0 分。每淘汰 1 人 = 1 分。平分依次比较 WWCD、排名积分、淘汰数、最近一局排名。</div><div class="tablewrap"><table><thead><tr><th>排名</th><th>队伍</th><th>赛事</th><th>WWCD</th><th>排名分</th><th>淘汰</th><th>总积分</th></tr></thead><tbody id="boardBody"><tr><td colspan="7" class="empty">载入中…</td></tr></tbody></table></div></div></section>
+<section id="boardTab"><div class="panel"><h3>赛季排行榜</h3><div class="notice score-note">PMGC 官方排名分：第 1 名 10 分、第 2 名 6 分、第 3 名 5 分、第 4 名 4 分、第 5 名 3 分、第 6 名 2 分、第 7–8 名 1 分、第 9–16 名 0 分。每淘汰 1 人 = 1 分。平分依次比较 WWCD、排名积分、淘汰数、最近一局排名。</div><div class="tablewrap"><table><thead><tr><th>名次</th><th>队伍</th><th>排名分</th><th>淘汰</th><th>总分</th></tr></thead><tbody id="boardBody"><tr><td colspan="5" class="empty">载入中…</td></tr></tbody><tfoot id="boardFoot"></tfoot></table></div></div></section>
 <section id="matchesTab" class="hidden"><div class="panel"><h3>比赛记录</h3><div id="matchList" class="empty">载入中…</div></div></section>
 <section id="teamsTab" class="hidden"><div class="panel"><h3>已登记队伍</h3><div id="teamList" class="empty">载入中…</div></div></section>
 <section id="adminTab" class="hidden"><div id="adminGate" class="notice">管理中心仅限管理员 Google 账号使用。成员和访客只能查看数据。</div><div id="adminPanel" class="hidden">
@@ -144,9 +144,11 @@ function aggregate(){
 function renderAll(){
   const rows=aggregate();
   $("boardBody").innerHTML=rows.length?rows.map((x,i)=>`<tr>
-    <td class="rank">#${i+1}</td><td><b>${esc(x.team)}</b></td><td>${x.matches}</td>
-    <td>${x.wins}</td><td>${x.placementPoints}</td><td>${x.kills}</td><td class="rank">${x.points}</td>
-  </tr>`).join(""):'<tr><td colspan="7" class="empty">暂时没有比赛数据</td></tr>';
+    <td class="rank">#${i+1}</td><td><b>${esc(x.team)}</b></td>
+    <td>${x.placementPoints}</td><td>${x.kills}</td><td class="rank">${x.points}</td>
+  </tr>`).join(""):'<tr><td colspan="5" class="empty">暂时没有比赛数据</td></tr>';
+  const boardTotals=rows.reduce((a,x)=>({placement:a.placement+x.placementPoints,kills:a.kills+x.kills,points:a.points+x.points}),{placement:0,kills:0,points:0});
+  $("boardFoot").innerHTML=rows.length?`<tr><th colspan="2">总计</th><th>${boardTotals.placement}</th><th>${boardTotals.kills}</th><th class="rank">${boardTotals.points}</th></tr>`:"";
   $("statMatches").textContent=matches.length;
   $("statTeams").textContent=new Set([...teams.map(t=>t.name),...rows.map(x=>x.team)]).size;
   $("statKills").textContent=matches.reduce((n,m)=>n+kills(m),0);
