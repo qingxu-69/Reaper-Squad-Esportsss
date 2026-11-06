@@ -51,33 +51,7 @@ window.signOutUser=async()=>{try{await signOut(auth)}catch(e){err(e)}};
 onAuthStateChanged(auth,async u=>{currentUser=u;isAdmin=!!u&&u.uid===ADMIN_UID;alert("邮箱："+(u?.email||"没有登录")+"\nUID："+(u?.uid||"没有UID")+"\n管理员UID："+ADMIN_UID);$("userLabel").textContent=u?(u.displayName||u.email||"已登录"):"访客模式";$("loginBtn").classList.toggle("hidden",!!u);$("logoutBtn").classList.toggle("hidden",!u);$("adminGate").classList.toggle("hidden",isAdmin);$("adminPanel").classList.toggle("hidden",!isAdmin);await loadAll()});
 async function loadAll(){try{const [a,b]=await Promise.all([getDocs(collection(db,"teams")),getDocs(query(collection(db,"matches"),orderBy("createdAt","desc")))]);teams=a.docs.map(d=>({id:d.id,...d.data()}));matches=b.docs.map(d=>({id:d.id,...d.data()}));renderAll()}catch(e){console.error(e);$("boardBody").innerHTML='<tr><td colspan="7" class="empty">读取失败，请检查 Firestore Rules 是否已更新。</td></tr>'}}
 function kills(m){return m.rounds?m.rounds.reduce((n,r)=>n+(r.results||[]).reduce((a,x)=>a+Number(x.kills||0),0),0):(m.results||[]).reduce((a,x)=>a+Number(x.kills||0),0)}
-function aggregate(){
- let a={};
- for(const m of matches){
-  let one={};
-  const rounds=m.rounds||[{results:m.results||[]}];
-  for(const r of rounds){
-   for(const x of r.results||[]){
-    let k=x.team;
-    if(!one[k])one[k]={kills:0,rank:0,points:0,wins:0};
-    let pl=Number(x.placement||0),ki=Number(x.kills||0);
-    one[k].kills+=ki;
-    one[k].rank+=pts(pl);
-    one[k].points+=pts(pl)+ki;
-    if(pl===1)one[k].wins++;
-   }
-  }
-  for(const [k,v] of Object.entries(one)){
-   if(!a[k])a[k]={team:k,matches:0,wins:0,kills:0,rank:0,points:0};
-   a[k].matches++;
-   a[k].wins+=v.wins;
-   a[k].kills+=v.kills;
-   a[k].rank+=v.rank;
-   a[k].points+=v.points;
-  }
- }
- return Object.values(a).sort((x,y)=>y.points-x.points||y.wins-x.wins||y.kills-x.kills);
-}
+function aggregate(){let a={};for(const m of matches){let one={};const rounds=m.rounds||[{results:m.results||[]}];for(const r of rounds)for(const x of r.results||[]){let k=x.team;if(!one[k])one[k]={kills:0,rank:0,points:0,wins:0};let pl=Number(x.placement||0),ki=Number(x.kills||0);one[k].kills+=ki;one[k].rank+=pts(pl);one[k].points+=pts(pl)+ki;if(pl===1)one[k].wins++}for(const [k,v]of Object.entries(one)){if(!a[k])a[k]={team:k,matches:0,wins:0,kills:0,rank:0,points:0};a[k].matches++;a[k].wins+=v.wins;a[k].kills+=v.kills;a[k].rank+=v.rank;a[k].points+=v.points}}return Object.values(a).sort((x,y)=>y.points-x.points||y.wins-x.wins||y.kills-x.kills)}
 function renderAll(){let rows=aggregate();$("boardBody").innerHTML=rows.length?rows.map((x,i)=>`<tr><td class="rank">#${i+1}</td><td><b>${esc(x.team)}</b></td><td>${x.matches}</td><td>${x.wins}</td><td>${x.rank}</td><td>${x.kills}</td><td class="rank">${x.points}</td></tr>`).join(""):'<tr><td colspan="7" class="empty">暂时没有比赛数据</td></tr>';
 $("statMatches").textContent=matches.length;$("statTeams").textContent=new Set([...teams.map(t=>t.name),...rows.map(x=>x.team)]).size;$("statKills").textContent=matches.reduce((n,m)=>n+kills(m),0);
 $("teamList").innerHTML=teams.length?teams.map(t=>`<div class="teamcard"><div class="teamhead"><b>${esc(t.name)}</b><span class="tag">4 名队员</span></div><div class="players">${(t.players||[]).map(p=>`<span class="player">${esc(p)}</span>`).join("")}</div></div>`).join(""):'<div class="empty">管理员尚未登记队伍</div>';
