@@ -60,7 +60,15 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // 发布前请在 Firebase Console 创建项目，并填入你的项目资料。
-const firebaseConfig = {apiKey:"YOUR_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT_ID",appId:"YOUR_APP_ID"};
+const firebaseConfig = {
+  apiKey: "AIzaSyDekPmstKjjWb-CDyRhJ6a4w6hKAm1CyWw",
+  authDomain: "reaper-squad-esportss.firebaseapp.com",
+  projectId: "reaper-squad-esportss",
+  storageBucket: "reaper-squad-esportss.firebasestorage.app",
+  messagingSenderId: "648536201607",
+  appId: "1:648536201607:web:f2457dbb87c5d572181b22",
+  measurementId: "G-MRKCHJ6B6E"
+};
 // 把管理员 Google 账号的 UID 填在这里；同时必须部署随附的 Firestore Rules。
 const ADMIN_UID = "PUT_ADMIN_GOOGLE_UID_HERE";
 const MAPS = ["Erangel","Miramar","Sanhok","Vikendi","Livik","Rondo"];
