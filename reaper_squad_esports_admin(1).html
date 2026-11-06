@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reaper Squad Esports</title>
+<style>
+:root{--bg:#090a0d;--panel:#12151b;--panel2:#191d25;--gold:#d7ad55;--gold2:#f2d48a;--muted:#9aa2ad;--line:#2b3039;--white:#f5f5f2;--red:#ef6464}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% -10%,#332719 0,transparent 32%),var(--bg);color:var(--white);font-family:Inter,system-ui,"Noto Sans SC",Arial,sans-serif}
+header{border-bottom:1px solid #40331e;background:#0b0c0fdd;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+.wrap{max-width:1180px;margin:auto;padding:18px 22px}.top{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border:1px solid var(--gold);border-radius:12px;display:grid;place-items:center;color:var(--gold2);font-weight:900;font-size:15px;letter-spacing:-1px;background:linear-gradient(145deg,#262016,#090a0d);box-shadow:0 0 24px #d7ad5522}
+h1{font-size:18px;letter-spacing:1.8px;margin:0}.sub{color:var(--muted);font-size:11px;letter-spacing:2px;margin-top:4px}
+button,select,input{font:inherit}button{border:1px solid #80652f;background:linear-gradient(135deg,#d9b15d,#9d722d);color:#15120b;padding:10px 15px;border-radius:9px;font-weight:800;cursor:pointer}button.secondary{background:#171b22;color:var(--white);border-color:var(--line)}button.danger{background:#3a1919;color:#ffdada;border-color:#713838}button:disabled{opacity:.45;cursor:not-allowed}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}nav button{background:transparent;color:var(--muted);border:1px solid transparent}nav button.active{color:var(--gold2);border-color:#66512d;background:#211b11}
+main{max-width:1180px;margin:auto;padding:24px 22px 70px}.hero{padding:28px;border:1px solid #4a3a20;border-radius:18px;background:linear-gradient(110deg,#211a10,#11141a 62%,#11141a);margin-bottom:22px}
+.eyebrow{color:var(--gold);font-size:11px;letter-spacing:3px;font-weight:800}.hero h2{font-size:clamp(26px,5vw,42px);margin:10px 0}.hero p{color:#b4bac2;max-width:680px;line-height:1.7;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}.stat{background:#0c0f14;border:1px solid var(--line);border-radius:12px;padding:14px}.stat strong{display:block;color:var(--gold2);font-size:24px}.stat span{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}.panel h3{margin:0 0 14px;font-size:16px}.muted{color:var(--muted)}.small{font-size:12px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field label{font-size:12px;color:#c5c9cf}.field input,.field select{background:#0b0e13;border:1px solid #333a45;color:var(--white);border-radius:8px;padding:11px;min-width:0;width:100%}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:var(--gold2);font-weight:700;background:#1b1a17}td,th{padding:11px 9px;border-bottom:1px solid var(--line)}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}.rank{color:var(--gold2);font-weight:900}.pill{display:inline-block;border:1px solid #51452e;color:var(--gold2);border-radius:99px;padding:4px 8px;font-size:11px}
+.hidden{display:none!important}.notice{padding:12px;border-radius:10px;background:#201b11;border:1px solid #5c4828;color:#e6d2a6;font-size:12px;line-height:1.6}.empty{padding:25px;text-align:center;color:var(--muted);border:1px dashed #3b414b;border-radius:10px}
+footer{text-align:center;color:#707782;font-size:11px;padding:28px;border-top:1px solid var(--line)}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.wrap,main{padding-left:14px;padding-right:14px}.hero{padding:20px}table{font-size:12px}td,th{padding:9px 6px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+ <div class="top"><div class="brand"><div class="logo">RS</div><div><h1>REAPER SQUAD ESPORTS</h1><div class="sub">PUBG MOBILE · SCRIM MANAGEMENT</div></div></div>
+ <div class="row" style="flex:0 1 auto"><span id="userStatus" class="small muted">访客模式 · 仅可查看</span><button id="loginBtn" onclick="signIn()">Google 登录</button><button id="logoutBtn" class="secondary hidden" onclick="signOutUser()">退出</button></div></div>
+ <nav><button class="active" data-tab="board" onclick="showTab('board',this)">排行榜</button><button data-tab="matches" onclick="showTab('matches',this)">比赛记录</button><button data-tab="admin" onclick="showTab('admin',this)">管理员中心</button></nav>
+</div></header>
+<main>
+<section class="hero"><div class="eyebrow">OFFICIAL SCRIM HUB</div><h2>PLAY TO DOMINATE.</h2><p>Reaper Squad Esports 训练赛管理平台。查看队伍积分、比赛地图与每场成绩；管理员登录后可录入和管理比赛数据。</p>
+<div class="stats"><div class="stat"><strong id="statMatches">0</strong><span>已记录比赛</span></div><div class="stat"><strong id="statTeams">0</strong><span>参赛队伍</span></div><div class="stat"><strong id="statKills">0</strong><span>总淘汰数</span></div></div></section>
+<section id="boardTab">
+ <div class="panel"><div class="row"><div><h3>赛季总排行榜</h3><div class="muted small">按总积分自动排序 · 同分依次比较胜场、排名分、淘汰数、最近一场名次</div></div><span class="pill">PUBG MOBILE SCORING</span></div>
+ <div id="leaderboard"><div class="empty">暂时没有比赛数据</div></div></div>
+</section>
+<section id="matchesTab" class="hidden"><div class="panel"><div class="row"><div><h3>比赛记录</h3><div class="muted small">按比赛查看地图、队伍名次与积分</div></div><select id="mapFilter" onchange="renderMatches()" style="max-width:190px;background:#0b0e13;color:white;border:1px solid #333a45;border-radius:8px;padding:9px"><option value="">全部地图</option></select></div><div id="matchList"><div class="empty">暂时没有比赛记录</div></div></div></section>
+<section id="adminTab" class="hidden">
+ <div id="adminGate" class="panel"><h3>管理员中心</h3><p class="muted">请使用已获授权的管理员 Google 账号登录。普通会员不能新增、编辑或删除数据。</p><button onclick="signIn()">Google 登录</button></div>
+ <div id="adminPanel" class="hidden">
+  <div class="panel"><h3>新增比赛</h3><div class="row">
+   <div class="field"><label>比赛名称</label><input id="matchName" placeholder="例如：Week 01 - Match 1"></div>
+   <div class="field"><label>比赛日期</label><input id="matchDate" type="date"></div>
+   <div class="field"><label>比赛地图</label><select id="matchMap"></select></div>
+  </div><div class="notice">地图将跟随比赛记录保存。可选地图：Erangel、Miramar、Sanhok、Vikendi、Livik、Rondo。</div></div>
+  <div class="panel"><h3>录入队伍成绩</h3><div class="row">
+   <div class="field"><label>队伍名称</label><input id="teamName" placeholder="输入队伍名称"></div>
+   <div class="field"><label>最终名次</label><select id="placement"></select></div>
+   <div class="field"><label>淘汰数</label><input id="kills" type="number" min="0" max="99" value="0"></div>
+   <div style="align-self:end;margin-bottom:12px"><button class="secondary" onclick="addResult()">加入本场</button></div>
+  </div><div id="pendingResults" class="small muted">尚未加入队伍成绩</div><div class="row" style="margin-top:14px"><button onclick="saveMatch()">保存比赛记录</button><button class="secondary" onclick="clearPending()">清空本场</button></div></div>
+  <div class="panel"><h3>数据管理</h3><p class="muted small">删除操作会同步移除对应比赛记录。</p><div id="adminMatchList"></div></div>
+ </div>
+</section>
+</main><footer>REAPER SQUAD ESPORTS · BLACK & GOLD EDITION</footer>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// 发布前请在 Firebase Console 创建项目，并填入你的项目资料。
+const firebaseConfig = {apiKey:"YOUR_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT_ID",appId:"YOUR_APP_ID"};
+// 把管理员 Google 账号的 UID 填在这里；同时必须部署随附的 Firestore Rules。
+const ADMIN_UID = "PUT_ADMIN_GOOGLE_UID_HERE";
+const MAPS = ["Erangel","Miramar","Sanhok","Vikendi","Livik","Rondo"];
+const PLACE_POINTS = {1:10,2:6,3:5,4:4,5:3,6:2,7:1,8:1};
+let app,auth,db,user=null,isAdmin=false,cloudReady=false,allMatches=[],pending=[];
+const $=id=>document.getElementById(id);
+MAPS.forEach(m=>{$("matchMap").add(new Option(m,m));$("mapFilter").add(new Option(m,m));});
+for(let i=1;i<=16;i++)$("placement").add(new Option(i+" 名",i));
+$("matchDate").value=new Date().toISOString().slice(0,10);
+try{
+ if(firebaseConfig.apiKey!=="YOUR_API_KEY" && firebaseConfig.projectId!=="YOUR_PROJECT_ID"){
+  app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);cloudReady=true;
+  onAuthStateChanged(auth,async u=>{user=u;isAdmin=!!u&&u.uid===ADMIN_UID&&ADMIN_UID!=="PUT_ADMIN_GOOGLE_UID_HERE";updateAuthUI();await loadMatches();});
+ }else{updateAuthUI();renderAll();}
+}catch(e){console.error(e);updateAuthUI();renderAll();}
+function updateAuthUI(){
+ $("userStatus").textContent=user?(isAdmin?"管理员已登录":"已登录 · 只读会员"):"访客模式 · 仅可查看";
+ $("loginBtn").classList.toggle("hidden",!!user);$("logoutBtn").classList.toggle("hidden",!user);
+ $("adminGate").classList.toggle("hidden",isAdmin);$("adminPanel").classList.toggle("hidden",!isAdmin);
+}
+window.signIn=async()=>{if(!auth){alert("网站尚未连接 Firebase。请先完成 Firebase 设置。");return;}try{await signInWithPopup(auth,new GoogleAuthProvider());}catch(e){alert("登录失败："+e.message);}};
+window.signOutUser=async()=>{if(auth)await signOut(auth);};
+async function loadMatches(){
+ if(!cloudReady){renderAll();return;}
+ try{const snap=await getDocs(query(collection(db,"matches"),orderBy("createdAt","desc")));allMatches=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();}
+ catch(e){console.error(e);$("matchList").innerHTML='<div class="notice">读取云端数据失败。请检查 Firestore 数据库和读取规则。</div>';}
+}
+function score(place,kills){return (PLACE_POINTS[Number(place)]||0)+Number(kills||0);}
+function aggregate(){
+ const map=new Map();
+ allMatches.forEach(m=>(m.results||[]).forEach(r=>{
+  const n=r.team.trim();if(!n)return;
+  if(!map.has(n))map.set(n,{team:n,points:0,placementPoints:0,kills:0,wins:0,matches:0,lastPlace:99,lastSeen:false});
+  const t=map.get(n),pp=PLACE_POINTS[Number(r.placement)]||0;
+  t.points+=pp+Number(r.kills||0);t.placementPoints+=pp;t.kills+=Number(r.kills||0);t.wins+=Number(r.placement)===1?1:0;t.matches++;
+  if(!t.lastSeen){t.lastPlace=Number(r.placement)||99;t.lastSeen=true;}
+ }));
+ return [...map.values()].sort((a,b)=>b.points-a.points||b.wins-a.wins||b.placementPoints-a.placementPoints||b.kills-a.kills||a.lastPlace-b.lastPlace);
+}
+function renderAll(){renderBoard();renderMatches();renderStats();renderAdmin();}
+function renderStats(){const rows=allMatches.flatMap(m=>m.results||[]);$("statMatches").textContent=allMatches.length;$("statTeams").textContent=new Set(rows.map(r=>r.team)).size;$("statKills").textContent=rows.reduce((s,r)=>s+Number(r.kills||0),0);}
+function renderBoard(){const rows=aggregate();$("leaderboard").innerHTML=rows.length?`<div style="overflow:auto"><table><thead><tr><th>排名</th><th>队伍</th><th class="num">场次</th><th class="num">胜场</th><th class="num">淘汰</th><th class="num">总积分</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="rank">#${i+1}</td><td><b>${esc(r.team)}</b></td><td class="num">${r.matches}</td><td class="num">${r.wins}</td><td class="num">${r.kills}</td><td class="num"><b>${r.points}</b></td></tr>`).join("")}</tbody></table></div>`:'<div class="empty">暂时没有比赛数据</div>';}
+function renderMatches(){const filter=$("mapFilter").value,arr=allMatches.filter(m=>!filter||m.map===filter);$("matchList").innerHTML=arr.length?arr.map(m=>`<div class="panel" style="background:#0d1015"><div class="row"><div><b>${esc(m.name||"未命名比赛")}</b><div class="muted small">${esc(m.date||"")} · <span class="pill">${esc(m.map||"未选择地图")}</span></div></div></div><div style="overflow:auto;margin-top:12px"><table><thead><tr><th>队伍</th><th class="num">名次</th><th class="num">淘汰</th><th class="num">总积分</th></tr></thead><tbody>${(m.results||[]).slice().sort((a,b)=>a.placement-b.placement).map(r=>`<tr><td>${esc(r.team)}</td><td class="num">${r.placement}</td><td class="num">${r.kills}</td><td class="num"><b>${score(r.placement,r.kills)}</b></td></tr>`).join("")}</tbody></table></div></div>`).join(""):'<div class="empty">没有符合条件的比赛</div>';}
+function renderAdmin(){$("adminMatchList").innerHTML=isAdmin&&allMatches.length?allMatches.map(m=>`<div class="row" style="padding:9px 0;border-bottom:1px solid #292e37"><span>${esc(m.name||"比赛")} · ${esc(m.map||"")}</span><button class="danger" style="flex:0 0 auto" onclick="removeMatch('${m.id}')">删除</button></div>`).join(""):'<div class="muted small">暂无记录</div>';}
+function renderPending(){$("pendingResults").innerHTML=pending.length?`<table><thead><tr><th>队伍</th><th>名次</th><th>淘汰</th><th>积分</th></tr></thead><tbody>${pending.map(r=>`<tr><td>${esc(r.team)}</td><td>${r.placement}</td><td>${r.kills}</td><td>${score(r.placement,r.kills)}</td></tr>`).join("")}</tbody></table>`:"尚未加入队伍成绩";}
+window.addResult=()=>{if(!isAdmin)return;const team=$("teamName").value.trim(),placement=Number($("placement").value),kills=Number($("kills").value);if(!team||!Number.isInteger(kills)||kills<0){alert("请填写正确的队伍名称和淘汰数");return;}if(pending.some(x=>x.team.toLowerCase()===team.toLowerCase())){alert("本场已有该队伍");return;}pending.push({team,placement,kills});$("teamName").value="";$("kills").value=0;renderPending();};
+window.clearPending=()=>{pending=[];renderPending();};
+window.saveMatch=async()=>{if(!isAdmin||!cloudReady){alert("请先完成 Firebase 设置并以管理员身份登录");return;}if(!pending.length){alert("请先加入队伍成绩");return;}const data={name:$("matchName").value.trim()||"Scrim Match",date:$("matchDate").value,map:$("matchMap").value,results:pending,createdAt:Date.now(),createdBy:user.uid};try{await addDoc(collection(db,"matches"),data);pending=[];$("matchName").value="";renderPending();await loadMatches();alert("比赛记录已保存");}catch(e){alert("保存失败："+e.message);}};
+window.removeMatch=async id=>{if(!isAdmin||!confirm("确定删除这场比赛？"))return;try{await deleteDoc(doc(db,"matches",id));await loadMatches();}catch(e){alert("删除失败："+e.message);}};
+window.showTab=(tab,btn)=>{["board","matches","admin"].forEach(t=>$(t+"Tab").classList.toggle("hidden",t!==tab));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b===btn));};
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+updateAuthUI();renderAll();
+</script>
+</body></html>
