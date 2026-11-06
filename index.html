@@ -8,7 +8,7 @@
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#191710 0,#090a0d 42%);color:#f4f1e9;font-family:Arial,"Noto Sans SC",sans-serif}
 header{padding:18px 12px;border-bottom:1px solid #443820;background:#0c0d10;position:sticky;top:0;z-index:5}.wrap{max-width:1100px;margin:auto;padding:0 14px}
 .top,.brand,.actions,.tabs,.teamhead,.roundhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.brand{justify-content:flex-start}.logo{width:46px;height:46px;border:2px solid var(--gold);border-radius:12px;display:grid;place-items:center;color:var(--gold2);font-weight:900}.brand h1{font-size:18px;margin:0;letter-spacing:1px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:3px;margin-top:4px}
-button{border:1px solid #6e572c;background:#211b10;color:var(--gold2);padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:700}button.primary{background:linear-gradient(135deg,#e4bd69,#a87c32);color:#17120a;border:0}button.danger{border-color:#754343;color:#ffaaaa;background:#211313}
+button{border:1px solid #6e572c;background:#211b10;color:var(--gold2);padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:700}button:disabled{opacity:.6;cursor:wait}button.primary{background:linear-gradient(135deg,#e4bd69,#a87c32);color:#17120a;border:0}button.danger{border-color:#754343;color:#ffaaaa;background:#211313}
 nav{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}nav button{background:#11141a;border-color:var(--line);color:#b9bec7}nav button.active{color:var(--gold2);border-color:var(--gold)}
 .hero{padding:26px 0 12px}.eyebrow{color:var(--gold);font-size:11px;letter-spacing:4px;font-weight:bold}.hero h2{font-size:clamp(25px,5vw,38px);margin:9px 0}.muted{color:var(--muted)}.hidden{display:none!important}
 .stats,.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.stat,.panel,.round{background:linear-gradient(145deg,#171a21,#101217);border:1px solid var(--line);border-radius:14px;padding:15px}.stat b,.summary b{font-size:23px;color:var(--gold2);display:block}.stat span,.summary span{color:var(--muted);font-size:12px}
@@ -56,15 +56,42 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$
 let currentUser=null,isAdmin=false,teams=[],matches=[],selectedTeams=[],editingMatchId=null;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pts=p=>PLACE_POINTS[Number(p)]??0;
-function err(e){console.error(e);alert("操作失败："+(e?.message||e))}
+function err(e){
+  console.error(e);
+  const code=e?.code||"未知错误";
+  const messages={
+    "auth/unauthorized-domain":"网站域名尚未加入 Firebase Authorized domains。",
+    "auth/operation-not-allowed":"Firebase 尚未启用 Google 登录提供商。",
+    "auth/popup-blocked":"Chrome 拦截了登录弹窗，请允许此网站弹出式窗口。",
+    "auth/popup-closed-by-user":"登录窗口被关闭，请重新尝试。",
+    "auth/cancelled-popup-request":"已有一个登录窗口正在处理，请稍后再试。",
+    "auth/network-request-failed":"网络连接失败，请检查网络后重试。",
+    "auth/invalid-api-key":"Firebase API Key 无效，请检查 firebaseConfig。",
+    "auth/account-exists-with-different-credential":"此邮箱已使用其他登录方式注册，请检查账号登录方式。"
+  };
+  alert("操作失败\n错误代码："+code+"\n"+(messages[code]||e?.message||"请查看浏览器控制台的详细错误。"));
+}
 window.showTab=id=>{
   document.querySelectorAll("main>section[id$='Tab']").forEach(x=>x.classList.add("hidden"));
   $(id+"Tab").classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
 };
 window.signIn=async()=>{
-  try{await setPersistence(auth,browserLocalPersistence);await signInWithPopup(auth,new GoogleAuthProvider())}
-  catch(e){err(e)}
+  const btn=$("loginBtn");
+  if(btn.disabled)return;
+  btn.disabled=true;
+  btn.textContent="正在登录…";
+  try{
+    await setPersistence(auth,browserLocalPersistence);
+    const provider=new GoogleAuthProvider();
+    provider.setCustomParameters({prompt:"select_account"});
+    await signInWithPopup(auth,provider);
+  }catch(e){
+    err(e);
+  }finally{
+    btn.disabled=false;
+    btn.textContent="Google 登录";
+  }
 };
 window.signOutUser=async()=>{try{await signOut(auth)}catch(e){err(e)}};
 
@@ -77,6 +104,10 @@ onAuthStateChanged(auth,async u=>{
   $("adminGate").classList.toggle("hidden",isAdmin);
   $("adminPanel").classList.toggle("hidden",!isAdmin);
   await loadAll();
+},e=>{
+  console.error("Firebase Auth 状态监听失败：",e);
+  $("userLabel").textContent="登录状态读取失败";
+  err(e);
 });
 
 async function loadAll(){
@@ -91,6 +122,9 @@ async function loadAll(){
   }catch(e){
     console.error(e);
     $("boardBody").innerHTML='<tr><td colspan="7" class="empty">读取失败，请检查 Firestore Rules 是否已更新。</td></tr>';
+    $("matchList").textContent="比赛记录读取失败，请检查 Firestore Rules。";
+    $("teamList").textContent="队伍资料读取失败，请检查 Firestore Rules。";
+    $("adminMatchList").textContent="管理记录读取失败，请检查 Firestore Rules。";
   }
 }
 function getRounds(m){return Array.isArray(m.rounds)?m.rounds:[{results:m.results||[]}];}
@@ -154,44 +188,23 @@ function renderAll(){
     <div class="players">${(t.players||[]).map(p=>`<span class="player">${esc(p)}</span>`).join("")}</div>
   </div>`).join(""):'<div class="empty">管理员尚未登记队伍</div>';
 
-  // 比赛记录：每局显示可自定义名称、排名分、淘汰数及自动计算总分。
-  // 旧记录没有 roundName 时，使用“第1把”等名称，不改动旧数据。
   $("matchList").innerHTML=matches.length?matches.map(m=>{
     if(!m.rounds)return `<div class="matchcard"><b>${esc(m.name||"旧版比赛记录")}</b><span class="tag">旧版记录</span><p class="muted">${esc(m.date||"")} · 原始记录已保留</p></div>`;
-
     let totalKills=0,totalPlacement=0,totalScore=0;
     const tableRows=m.rounds.map((r,i)=>{
       let placement=0,kill=0;
-      for(const x of r.results||[]){
-        placement+=pts(x.placement);
-        kill+=Number(x.kills||0);
-      }
-      const score=placement+kill;
-      totalPlacement+=placement;
-      totalKills+=kill;
-      totalScore+=score;
-      return `<tr>
-        <td>${esc(r.roundName||`第${i+1}把`)}</td>
-        <td>${placement}</td>
-        <td>${kill}</td>
-        <td class="rank">${score}</td>
-      </tr>`;
+      for(const x of r.results||[]){placement+=pts(x.placement);kill+=Number(x.kills||0);}
+      const score=placement+kill;totalPlacement+=placement;totalKills+=kill;totalScore+=score;
+      return `<tr><td>${esc(r.roundName||`第${i+1}把`)}</td><td>${placement}</td><td>${kill}</td><td class="rank">${score}</td></tr>`;
     });
-
     return `<div class="matchcard">
       <h4>${esc(m.name||"未命名比赛")} <span class="tag">5 把</span></h4>
       <p class="muted">${esc(m.date||"")}</p>
       <p>${m.rounds.map((r,i)=>`<span class="tag">第${i+1}把：${esc(r.map||"未指定地图")}</span>`).join("")}</p>
-      <div class="tablewrap"><table>
-        <thead><tr><th></th><th>排名</th><th>淘汰</th><th>总分</th></tr></thead>
-        <tbody>
-          ${tableRows.join("")}
-          <tr><td><b>总计</b></td><td><b>${totalPlacement}</b></td><td><b>${totalKills}</b></td><td class="rank"><b>${totalScore}</b></td></tr>
-        </tbody>
-      </table></div>
+      <div class="tablewrap"><table><thead><tr><th></th><th>排名</th><th>淘汰</th><th>总分</th></tr></thead>
+      <tbody>${tableRows.join("")}<tr><td><b>总计</b></td><td><b>${totalPlacement}</b></td><td><b>${totalKills}</b></td><td class="rank"><b>${totalScore}</b></td></tr></tbody></table></div>
     </div>`;
   }).join(""):'<div class="empty">还没有比赛记录</div>';
-
   renderPicker();
   renderAdminMatches();
 }
@@ -252,20 +265,15 @@ window.editMatch=id=>{
   const teamNames=[...new Set(rounds.flatMap(r=>(r.results||[]).map(x=>x.team)))];
   selectedTeams=teamNames.map(name=>teams.find(t=>t.name===name)).filter(Boolean);
   if(!selectedTeams.length)return alert("这场比赛关联的队伍资料不存在，无法载入编辑。");
-
   editingMatchId=id;
   $("matchName").value=match.name||"";
   $("matchDate").value=match.date||"";
-  renderPicker();
-  renderParticipants();
-  renderRounds();
-
+  renderPicker();renderParticipants();renderRounds();
   rounds.forEach((round,i)=>{
     if(i>=5)return;
     const nameInput=$("roundName"+i),mapInput=$("map"+i);
     if(nameInput)nameInput.value=round.roundName||`第${i+1}把`;
     if(mapInput&&round.map)mapInput.value=round.map;
-
     for(const result of (round.results||[])){
       const team=selectedTeams.find(t=>t.name===result.team);
       if(!team)continue;
@@ -275,24 +283,17 @@ window.editMatch=id=>{
       if(placementInput)placementInput.value=String(result.placement||1);
       if(killsInput)killsInput.value=String(result.kills??0);
       if(compensationInput)compensationInput.value=String(result.compensation??0);
-      document.querySelectorAll(".part-"+CSS.escape(team.id)).forEach(input=>{
-        input.checked=(result.participants||[]).includes(input.value);
-      });
+      document.querySelectorAll(".part-"+CSS.escape(team.id)).forEach(input=>{input.checked=(result.participants||[]).includes(input.value);});
     }
   });
-
   $("saveMatchBtn").textContent="保存比赛修改";
   $("cancelEditBtn").classList.remove("hidden");
   $("roundEditors").scrollIntoView({behavior:"smooth",block:"start"});
 };
 window.cancelEditMatch=()=>{
-  editingMatchId=null;
-  $("matchName").value="";
-  $("matchDate").value=new Date().toISOString().slice(0,10);
-  selectedTeams=[];
-  renderPicker();renderParticipants();renderRounds();
-  $("saveMatchBtn").textContent="保存整场比赛（5 把）";
-  $("cancelEditBtn").classList.add("hidden");
+  editingMatchId=null;$("matchName").value="";$("matchDate").value=new Date().toISOString().slice(0,10);
+  selectedTeams=[];renderPicker();renderParticipants();renderRounds();
+  $("saveMatchBtn").textContent="保存整场比赛（5 把）";$("cancelEditBtn").classList.add("hidden");
 };
 window.saveMatch=async()=>{
   if(!isAdmin)return alert("只有管理员可以操作");
@@ -305,9 +306,7 @@ window.saveMatch=async()=>{
     for(const t of selectedTeams){
       const chosen=[...document.querySelectorAll(".part-"+CSS.escape(t.id)+":checked")].map(x=>x.value);
       if(chosen.length!==4)return alert(t.name+" 必须选择固定 4 名出战队员");
-      const placement=Number($("pl-"+i+"-"+t.id).value);
-      const ki=Number($("ki-"+i+"-"+t.id).value);
-      const compensation=Number($("cp-"+i+"-"+t.id).value||0);
+      const placement=Number($("pl-"+i+"-"+t.id).value),ki=Number($("ki-"+i+"-"+t.id).value),compensation=Number($("cp-"+i+"-"+t.id).value||0);
       if(usedPlacements.has(placement))return alert("第 "+(i+1)+" 把有重复排名（"+placement+" 名），请检查每支队伍的最终名次。");
       usedPlacements.add(placement);
       if(!Number.isInteger(ki)||ki<0||ki>99)return alert("淘汰数必须是 0–99 的整数");
@@ -326,14 +325,9 @@ window.saveMatch=async()=>{
       await addDoc(collection(db,"matches"),{...matchData,createdAt:serverTimestamp(),createdBy:currentUser.uid});
       alert("五局比赛已保存，PMGC 积分排行榜已自动更新");
     }
-    editingMatchId=null;
-    $("matchName").value="";
-    $("matchDate").value=new Date().toISOString().slice(0,10);
-    selectedTeams=[];
-    $("saveMatchBtn").textContent="保存整场比赛（5 把）";
-    $("cancelEditBtn").classList.add("hidden");
-    renderAll();
-    await loadAll();
+    editingMatchId=null;$("matchName").value="";$("matchDate").value=new Date().toISOString().slice(0,10);
+    selectedTeams=[];$("saveMatchBtn").textContent="保存整场比赛（5 把）";$("cancelEditBtn").classList.add("hidden");
+    renderAll();await loadAll();
   }catch(e){err(e)}
 };
 window.removeMatch=async id=>{
