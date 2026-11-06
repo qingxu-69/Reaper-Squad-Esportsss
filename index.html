@@ -30,18 +30,18 @@ nav{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}nav button{background:#111
 <section id="matchesTab" class="hidden"><div class="panel"><h3>比赛记录</h3><div id="matchList" class="empty">载入中…</div></div></section>
 <section id="teamsTab" class="hidden"><div class="panel"><h3>已登记队伍</h3><div id="teamList" class="empty">载入中…</div></div></section>
 <section id="adminTab" class="hidden"><div id="adminGate" class="notice">管理中心仅限管理员 Google 账号使用。成员和访客只能查看数据。</div><div id="adminPanel" class="hidden">
-<div class="panel"><h3>建立 / 更新队伍（固定 4 名队员）</h3><div class="field"><label>队伍名称</label><input id="teamName" placeholder="队伍名称"></div><div class="grid2"><div class="field"><label>队员 1</label><input id="p1" placeholder="队员名称"></div><div class="field"><label>队员 2</label><input id="p2" placeholder="队员名称"></div><div class="field"><label>队员 3</label><input id="p3" placeholder="队员名称"></div><div class="field"><label>队员 4</label><input id="p4" placeholder="队员名称"></div></div><button class="primary" onclick="saveTeam()">保存队伍</button></div>
-<div class="panel"><h3>创建五局比赛</h3><div class="grid2"><div class="field"><label>比赛名称</label><input id="matchName" placeholder="例如：周末训练赛"></div><div class="field"><label>比赛日期</label><input id="matchDate" type="date"></div></div><div class="field"><label>选择参赛队伍</label><div id="teamPicker" class="notice">请先建立队伍。</div></div><div id="participantPickers"></div><div id="roundEditors"></div><button class="primary" onclick="saveMatch()">保存整场比赛（5 把）</button></div>
+<div class="panel"><h3>建立 / 更新队伍（固定 4 名队员）</h3><p class="muted">输入已有队伍的相同名称并保存，即可更新队员资料。</p><div class="field"><label>队伍名称</label><input id="teamName" placeholder="队伍名称"></div><div class="grid2"><div class="field"><label>队员 1</label><input id="p1" placeholder="队员名称"></div><div class="field"><label>队员 2</label><input id="p2" placeholder="队员名称"></div><div class="field"><label>队员 3</label><input id="p3" placeholder="队员名称"></div><div class="field"><label>队员 4</label><input id="p4" placeholder="队员名称"></div></div><button class="primary" onclick="saveTeam()">保存队伍</button></div>
+<div class="panel"><h3>创建五局比赛</h3><div class="grid2"><div class="field"><label>比赛名称</label><input id="matchName" placeholder="例如：周末训练赛"></div><div class="field"><label>比赛日期</label><input id="matchDate" type="date"></div></div><div class="field"><label>选择参赛队伍</label><div id="teamPicker" class="notice">请先建立队伍。</div></div><div id="participantPickers"></div><div id="roundEditors"></div><div class="actions"><button id="saveMatchBtn" class="primary" onclick="saveMatch()">保存整场比赛（5 把）</button><button id="cancelEditBtn" type="button" class="hidden" onclick="cancelEditMatch()">取消编辑</button></div></div>
 <div class="panel"><h3>管理已保存比赛</h3><div id="adminMatchList" class="empty">载入中…</div></div></div></section>
 <footer>REAPER SQUAD ESPORTS · PUBG MOBILE · PMGC SCORING FORMAT</footer>
 </main>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc,setDoc,query,orderBy,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc,setDoc,updateDoc,query,orderBy,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyDekPmstKjjWb-CDyRhJ6a4w6hKAm1CyWw",
+  apiKey:"AIzaSyDekPmstKjjWb-CDyRhJ6a4w6hKAm1Cyw",
   authDomain:"reaper-squad-esportss.firebaseapp.com",
   projectId:"reaper-squad-esportss",
   storageBucket:"reaper-squad-esportss.firebasestorage.app",
@@ -53,7 +53,7 @@ const ADMIN_UID="GmkehgoarFPEZk1Hmnl8Dh0X3Ui2";
 const MAPS=["Erangel","Miramar","Sanhok","Vikendi","Livik","Rondo"];
 const PLACE_POINTS={1:10,2:6,3:5,4:4,5:3,6:2,7:1,8:1};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-let currentUser=null,isAdmin=false,teams=[],matches=[],selectedTeams=[];
+let currentUser=null,isAdmin=false,teams=[],matches=[],selectedTeams=[],editingMatchId=null;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pts=p=>PLACE_POINTS[Number(p)]??0;
 function err(e){console.error(e);alert("操作失败："+(e?.message||e))}
@@ -241,9 +241,59 @@ function renderRounds(){
 function renderAdminMatches(){
   $("adminMatchList").innerHTML=matches.length?matches.map(m=>`<div class="teamcard">
     <div class="teamhead"><div><b>${esc(m.name||"旧版比赛")}</b><div class="muted">${esc(m.date||"")}</div></div>
-    <button class="danger" onclick="removeMatch('${esc(m.id)}')">删除</button></div>
+    <div class="actions"><button onclick="editMatch('${esc(m.id)}')">编辑</button><button class="danger" onclick="removeMatch('${esc(m.id)}')">删除</button></div></div>
   </div>`).join(""):'<div class="empty">暂无比赛</div>';
 }
+window.editMatch=id=>{
+  if(!isAdmin)return alert("只有管理员可以操作");
+  const match=matches.find(m=>m.id===id);
+  if(!match)return alert("找不到这场比赛");
+  const rounds=getRounds(match);
+  const teamNames=[...new Set(rounds.flatMap(r=>(r.results||[]).map(x=>x.team)))];
+  selectedTeams=teamNames.map(name=>teams.find(t=>t.name===name)).filter(Boolean);
+  if(!selectedTeams.length)return alert("这场比赛关联的队伍资料不存在，无法载入编辑。");
+
+  editingMatchId=id;
+  $("matchName").value=match.name||"";
+  $("matchDate").value=match.date||"";
+  renderPicker();
+  renderParticipants();
+  renderRounds();
+
+  rounds.forEach((round,i)=>{
+    if(i>=5)return;
+    const nameInput=$("roundName"+i),mapInput=$("map"+i);
+    if(nameInput)nameInput.value=round.roundName||`第${i+1}把`;
+    if(mapInput&&round.map)mapInput.value=round.map;
+
+    for(const result of (round.results||[])){
+      const team=selectedTeams.find(t=>t.name===result.team);
+      if(!team)continue;
+      const placementInput=$("pl-"+i+"-"+team.id);
+      const killsInput=$("ki-"+i+"-"+team.id);
+      const compensationInput=$("cp-"+i+"-"+team.id);
+      if(placementInput)placementInput.value=String(result.placement||1);
+      if(killsInput)killsInput.value=String(result.kills??0);
+      if(compensationInput)compensationInput.value=String(result.compensation??0);
+      document.querySelectorAll(".part-"+CSS.escape(team.id)).forEach(input=>{
+        input.checked=(result.participants||[]).includes(input.value);
+      });
+    }
+  });
+
+  $("saveMatchBtn").textContent="保存比赛修改";
+  $("cancelEditBtn").classList.remove("hidden");
+  $("roundEditors").scrollIntoView({behavior:"smooth",block:"start"});
+};
+window.cancelEditMatch=()=>{
+  editingMatchId=null;
+  $("matchName").value="";
+  $("matchDate").value=new Date().toISOString().slice(0,10);
+  selectedTeams=[];
+  renderPicker();renderParticipants();renderRounds();
+  $("saveMatchBtn").textContent="保存整场比赛（5 把）";
+  $("cancelEditBtn").classList.add("hidden");
+};
 window.saveMatch=async()=>{
   if(!isAdmin)return alert("只有管理员可以操作");
   const name=$("matchName").value.trim(),date=$("matchDate").value;
@@ -268,9 +318,22 @@ window.saveMatch=async()=>{
     rounds.push({roundName,map:$("map"+i).value,results});
   }
   try{
-    await addDoc(collection(db,"matches"),{name,date,rounds,createdAt:serverTimestamp(),createdBy:currentUser.uid,scoring:"PMGC_10_POINT"});
-    $("matchName").value="";selectedTeams=[];renderAll();await loadAll();
-    alert("五局比赛已保存，PMGC 积分排行榜已自动更新");
+    const matchData={name,date,rounds,scoring:"PMGC_10_POINT"};
+    if(editingMatchId){
+      await updateDoc(doc(db,"matches",editingMatchId),{...matchData,updatedAt:serverTimestamp()});
+      alert("比赛修改已保存，统计表和排行榜已更新");
+    }else{
+      await addDoc(collection(db,"matches"),{...matchData,createdAt:serverTimestamp(),createdBy:currentUser.uid});
+      alert("五局比赛已保存，PMGC 积分排行榜已自动更新");
+    }
+    editingMatchId=null;
+    $("matchName").value="";
+    $("matchDate").value=new Date().toISOString().slice(0,10);
+    selectedTeams=[];
+    $("saveMatchBtn").textContent="保存整场比赛（5 把）";
+    $("cancelEditBtn").classList.add("hidden");
+    renderAll();
+    await loadAll();
   }catch(e){err(e)}
 };
 window.removeMatch=async id=>{
