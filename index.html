@@ -56,7 +56,7 @@ footer{text-align:center;color:#707782;font-size:11px;padding:28px;border-top:1p
 </main><footer>REAPER SQUAD ESPORTS · BLACK & GOLD EDITION</footer>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // 发布前请在 Firebase Console 创建项目，并填入你的项目资料。
@@ -89,7 +89,7 @@ function updateAuthUI(){
  $("loginBtn").classList.toggle("hidden",!!user);$("logoutBtn").classList.toggle("hidden",!user);
  $("adminGate").classList.toggle("hidden",isAdmin);$("adminPanel").classList.toggle("hidden",!isAdmin);
 }
-window.signIn=async()=>{if(!auth){alert("网站尚未连接 Firebase。请先完成 Firebase 设置。");return;}try{await signInWithPopup(auth,new GoogleAuthProvider());}catch(e){alert("登录失败："+e.message);}};
+window.signIn=async()=>{if(!auth){alert("网站尚未连接 Firebase。");return;}try{await signInWithRedirect(auth,new GoogleAuthProvider());}catch(e){alert("登录失败："+e.message);}};
 window.signOutUser=async()=>{if(auth)await signOut(auth);};
 async function loadMatches(){
  if(!cloudReady){renderAll();return;}
