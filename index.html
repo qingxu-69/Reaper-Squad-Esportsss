@@ -37,8 +37,8 @@ nav{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}nav button{background:#111
 </main>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithRedirect,signOut,onAuthStateChanged,getRedirectResult,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import{getFirestore,collection,addDoc,getDocs,deleteDoc,doc,setDoc,query,orderBy,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const firebaseConfig={apiKey:"AIzaSyDekPmstKjjWb-CDyRhJ6a4w6hKAm1CyWw",authDomain:"reaper-squad-esportss.firebaseapp.com",projectId:"reaper-squad-esportss",storageBucket:"reaper-squad-esportss.firebasestorage.app",messagingSenderId:"648536201607",appId:"1:648536201607:web:f2457dbb87c5d572181b22",measurementId:"G-MRKCHJ6B6E"};
 const ADMIN_UID="GmkehgoarFPEZk1Hmnl8Dh0X3Ui2",MAPS=["Erangel","Miramar","Sanhok","Vikendi","Livik","Rondo"],PLACE_POINTS={1:10,2:6,3:5,4:4,5:3,6:2,7:1,8:1};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
@@ -46,9 +46,8 @@ let currentUser=null,isAdmin=false,teams=[],matches=[],selectedTeams=[];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),pts=p=>PLACE_POINTS[Number(p)]||0;
 function err(e){alert("操作失败："+(e?.message||e))}
 window.showTab=id=>{document.querySelectorAll("main>section[id$='Tab']").forEach(x=>x.classList.add("hidden"));$(id+"Tab").classList.remove("hidden");document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id))};
-window.signIn=async()=>{try{await setPersistence(auth,browserLocalPersistence);await signInWithRedirect(auth,new GoogleAuthProvider())}catch(e){err(e)}};
+window.signIn=async()=>{try{await setPersistence(auth,browserLocalPersistence);await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){err(e)}};
 window.signOutUser=async()=>{try{await signOut(auth)}catch(e){err(e)}};
-try{await getRedirectResult(auth)}catch(e){console.warn(e)}
 onAuthStateChanged(auth,async u=>{currentUser=u;isAdmin=!!u&&u.uid===ADMIN_UID;alert("邮箱："+(u?.email||"没有登录")+"\nUID："+(u?.uid||"没有UID")+"\n管理员UID："+ADMIN_UID);$("userLabel").textContent=u?(u.displayName||u.email||"已登录"):"访客模式";$("loginBtn").classList.toggle("hidden",!!u);$("logoutBtn").classList.toggle("hidden",!u);$("adminGate").classList.toggle("hidden",isAdmin);$("adminPanel").classList.toggle("hidden",!isAdmin);await loadAll()});
 async function loadAll(){try{const [a,b]=await Promise.all([getDocs(collection(db,"teams")),getDocs(query(collection(db,"matches"),orderBy("createdAt","desc")))]);teams=a.docs.map(d=>({id:d.id,...d.data()}));matches=b.docs.map(d=>({id:d.id,...d.data()}));renderAll()}catch(e){console.error(e);$("boardBody").innerHTML='<tr><td colspan="6" class="empty">读取失败，请检查 Firestore Rules 是否已更新。</td></tr>'}}
 function kills(m){return m.rounds?m.rounds.reduce((n,r)=>n+(r.results||[]).reduce((a,x)=>a+Number(x.kills||0),0),0):(m.results||[]).reduce((a,x)=>a+Number(x.kills||0),0)}
