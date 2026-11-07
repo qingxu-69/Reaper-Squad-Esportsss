@@ -105,6 +105,7 @@ function renderAll(){
   $("teamList").innerHTML=teams.length?teams.map(t=>`<div class="teamcard"><div class="teamhead"><b>${esc(t.name)}</b><span class="tag">4 名队员</span></div><div class="players">${(t.players||[]).map(p=>`<span class="player">${esc(p)}</span>`).join("")}</div></div>`).join(""):'<div class="empty">管理员尚未登记队伍</div>';
   $("matchList").innerHTML=matches.length?matches.map(m=>{
     if(!m.rounds)return `<div class="matchcard"><b>${esc(m.name||"旧版比赛记录")}</b><span class="tag">旧版记录</span><p class="muted">${esc(m.date||"")} · 原始记录已保留</p></div>`;
+    // 每次 map(m => ...) 都会为当前比赛单独建立 totals 与汇总值，不会跨比赛累加。
     let totalKills=0,totalPlacement=0,totals={};
     for(const r of m.rounds)for(const x of r.results||[]){
       const kp=Number(x.kills||0),pp=pts(x.placement);totalKills+=kp;totalPlacement+=pp;
@@ -113,7 +114,7 @@ function renderAll(){
     }
     const grand=totalKills+totalPlacement;
     const teamRows=Object.entries(totals).sort((a,b)=>b[1].total-a[1].total||b[1].placement-a[1].placement||b[1].kills-a[1].kills);
-    return `<div class="matchcard"><h4>${esc(m.name||"未命名比赛")} <span class="tag">5 把</span></h4><p class="muted">${esc(m.date||"")}</p><p>${m.rounds.map((r,i)=>`<span class="tag">第${i+1}把：${esc(r.map||"未指定地图")}</span>`).join("")}</p><div class="summary"><div><b>${totalPlacement}</b><span>总排名分</span></div><div><b>${totalKills}</b><span>总淘汰数</span></div><div><b>${grand}</b><span>总分</span></div></div><div class="tablewrap"><table><thead><tr><th>队伍</th><th>排名</th><th>淘汰</th><th>总分</th></tr></thead><tbody>${teamRows.map(([n,v])=>`<tr><td><b>${esc(n)}</b></td><td>${v.placement}</td><td>${v.kills}</td><td class="rank">${v.total}</td></tr>`).join("")}<tr><th>总计</th><th>${totalPlacement}</th><th>${totalKills}</th><th class="rank">${grand}</th></tr></tbody></table></div></div>`;
+    return `<div class="matchcard"><h4>${esc(m.name||"未命名比赛")} <span class="tag">5 把</span></h4><p class="muted">${esc(m.date||"")}</p><p>${m.rounds.map((r,i)=>`<span class="tag">第${i+1}把：${esc(r.map||"未指定地图")}</span>`).join("")}</p><div class="summary"><div><b>${totalPlacement}</b><span>总排名分</span></div><div><b>${totalKills}</b><span>总淘汰数</span></div><div><b>${grand}</b><span>总分</span></div></div><div class="tablewrap"><table><thead><tr><th>队伍</th><th>排名分</th><th>淘汰</th><th>总分</th></tr></thead><tbody>${teamRows.map(([n,v])=>`<tr><td><b>${esc(n)}</b></td><td>${v.placement}</td><td>${v.kills}</td><td class="rank">${v.total}</td></tr>`).join("")}<tr><th>总计</th><th>${totalPlacement}</th><th>${totalKills}</th><th class="rank">${grand}</th></tr></tbody></table></div></div>`;
   }).join(""):'<div class="empty">还没有比赛记录</div>';
   renderPicker();renderAdminMatches();
 }
