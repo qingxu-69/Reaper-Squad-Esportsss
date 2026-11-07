@@ -1,218 +1,218 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reaper Squad Esports</title>
-<style>
-:root{--bg:#090a0d;--panel:#12151b;--gold:#d7ad55;--gold2:#f2d48a;--muted:#9aa2ad;--line:#2b303a}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#191710 0,#090a0d 42%);color:#f4f1e9;font-family:Arial,"Noto Sans SC",sans-serif}
-header{padding:18px 12px;border-bottom:1px solid #443820;background:#0c0d10;position:sticky;top:0;z-index:5}.wrap{max-width:1100px;margin:auto;padding:0 14px}
-.top,.brand,.actions,.tabs,.teamhead,.roundhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.brand{justify-content:flex-start}.logo{width:46px;height:46px;border:2px solid var(--gold);border-radius:12px;display:grid;place-items:center;color:var(--gold2);font-weight:900}.brand h1{font-size:18px;margin:0;letter-spacing:1px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:3px;margin-top:4px}
-button{border:1px solid #6e572c;background:#211b10;color:var(--gold2);padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:700}button.primary{background:linear-gradient(135deg,#e4bd69,#a87c32);color:#17120a;border:0}button.danger{border-color:#754343;color:#ffaaaa;background:#211313}button.secondary{background:#111820;border-color:#465363;color:#d7e0eb}
-nav{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}nav button{background:#11141a;border-color:var(--line);color:#b9bec7}nav button.active{color:var(--gold2);border-color:var(--gold)}
-.hero{padding:26px 0 12px}.eyebrow{color:var(--gold);font-size:11px;letter-spacing:4px;font-weight:bold}.hero h2{font-size:clamp(25px,5vw,38px);margin:9px 0}.muted{color:var(--muted)}.hidden{display:none!important}
-.stats,.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.stat,.panel,.round{background:linear-gradient(145deg,#171a21,#101217);border:1px solid var(--line);border-radius:14px;padding:15px}.stat b,.summary b{font-size:23px;color:var(--gold2);display:block}.stat span,.summary span{color:var(--muted);font-size:12px}
-.panel{margin:14px 0}.panel h3{margin:0 0 14px;color:var(--gold2);font-size:17px}.field{display:flex;flex-direction:column;gap:6px;margin:9px 0}.field label{font-size:12px;color:#c4c8cf}.field input,.field select{width:100%;background:#0b0e13;border:1px solid #343b46;color:#f4f1e9;padding:11px;border-radius:8px;min-width:0}
-.grid2,.inline{display:grid;grid-template-columns:1fr 1fr;gap:10px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px 8px;border-bottom:1px solid #292e37;text-align:left;white-space:nowrap}th{color:var(--gold)}.tablewrap{overflow-x:auto}.rank{color:var(--gold2);font-weight:800}
-.notice,.teamcard{padding:12px;border:1px solid #66532d;background:#1b170f;border-radius:9px;color:#e5d4ad;font-size:13px;margin:10px 0}.teamcard{background:#0d1015;border-color:#343b46;color:#eee}.players{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.player,.tag{font-size:11px;border:1px solid #424956;border-radius:20px;padding:5px 9px;color:#cbd0d8;display:inline-block;margin:2px}
-.round{margin:12px 0}.round h4{margin:0;color:var(--gold2)}.teamround{border-top:1px solid #303641;padding-top:8px;margin-top:8px}.checkplayers{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.checkplayers label{font-size:12px;background:#10141a;border:1px solid #303743;border-radius:8px;padding:8px;display:flex;gap:7px}
-.empty{text-align:center;color:var(--muted);padding:22px}.matchcard{border-bottom:1px solid #303641;padding:14px 0}.score-note{font-size:12px;color:#b9a77f;line-height:1.7}.field small{color:var(--muted)}footer{text-align:center;color:#666d78;font-size:11px;padding:24px}.buttonrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.editing{border-color:var(--gold)!important;box-shadow:0 0 0 1px #6e572c}
-@media(max-width:650px){.grid2,.inline{grid-template-columns:1fr}.stats,.summary{gap:6px}.stat,.summary div{padding:9px}.stat b,.summary b{font-size:18px}header{padding:13px 0}.wrap{padding:0 11px}}
-</style>
-</head>
-<body>
-<header><div class="wrap top"><div class="brand"><div class="logo">RS</div><div><h1>REAPER SQUAD ESPORTS</h1><small>PUBG MOBILE SCRIM SYSTEM</small></div></div><div class="actions"><span id="userLabel" class="muted"></span><button id="loginBtn" onclick="signIn()">Google 登录</button><button id="logoutBtn" class="hidden" onclick="signOutUser()">退出登录</button></div></div></header>
-<main class="wrap">
-<section class="hero"><div class="eyebrow">COMPETITIVE RECORDS</div><h2>比赛数据中心</h2><p class="muted">五局赛制 · PMGC 积分 · 实时排行榜</p></section>
-<div class="stats"><div class="stat"><b id="statMatches">0</b><span>比赛场次（赛事）</span></div><div class="stat"><b id="statTeams">0</b><span>参赛队伍</span></div><div class="stat"><b id="statKills">0</b><span>总淘汰</span></div></div>
-<nav><button class="active" data-tab="board" onclick="showTab('board')">排行榜</button><button data-tab="matches" onclick="showTab('matches')">比赛记录</button><button data-tab="teams" onclick="showTab('teams')">队伍名单</button><button data-tab="admin" onclick="showTab('admin')">管理中心</button></nav>
-<section id="boardTab"><div class="panel"><h3>赛季排行榜</h3><div class="notice score-note">PMGC 官方排名分：第 1 名 10 分、第 2 名 6 分、第 3 名 5 分、第 4 名 4 分、第 5 名 3 分、第 6 名 2 分、第 7–8 名 1 分、第 9–16 名 0 分。每淘汰 1 人 = 1 分。平分依次比较 WWCD、排名积分、淘汰数、最近一局排名。</div><div class="tablewrap"><table><thead><tr><th>排名</th><th>队伍</th><th>赛事</th><th>WWCD</th><th>排名分</th><th>淘汰</th><th>总积分</th></tr></thead><tbody id="boardBody"><tr><td colspan="7" class="empty">载入中…</td></tr></tbody></table></div></div></section>
-<section id="matchesTab" class="hidden"><div class="panel"><h3>比赛记录</h3><div id="matchList" class="empty">载入中…</div></div></section>
-<section id="teamsTab" class="hidden"><div class="panel"><h3>已登记队伍</h3><div id="teamList" class="empty">载入中…</div></div></section>
-<section id="adminTab" class="hidden"><div id="adminGate" class="notice">管理中心仅限管理员 Google 账号使用。成员和访客只能查看数据。</div><div id="adminPanel" class="hidden">
-<div class="panel" id="teamFormPanel"><h3 id="teamFormTitle">建立 / 更新队伍（固定 4 名队员）</h3><div class="field"><label>队伍名称</label><input id="teamName" placeholder="队伍名称"></div><div class="grid2"><div class="field"><label>队员 1</label><input id="p1" placeholder="队员名称"></div><div class="field"><label>队员 2</label><input id="p2" placeholder="队员名称"></div><div class="field"><label>队员 3</label><input id="p3" placeholder="队员名称"></div><div class="field"><label>队员 4</label><input id="p4" placeholder="队员名称"></div></div><div class="buttonrow"><button class="primary" onclick="saveTeam()">保存队伍</button><button id="cancelTeamEdit" class="secondary hidden" onclick="cancelTeamEdit()">取消修改</button></div></div>
-<div class="panel"><h3 id="matchFormTitle">创建五局比赛</h3><div class="grid2"><div class="field"><label>比赛名称</label><input id="matchName" placeholder="例如：周末训练赛"></div><div class="field"><label>比赛日期</label><input id="matchDate" type="date"></div></div><div class="field"><label>选择参赛队伍</label><div id="teamPicker" class="notice">请先建立队伍。</div></div><div id="participantPickers"></div><div id="roundEditors"></div><div class="buttonrow"><button id="saveMatchBtn" class="primary" onclick="saveMatch()">保存整场比赛（5 把）</button><button id="cancelMatchEdit" class="secondary hidden" onclick="cancelMatchEdit()">取消修改</button></div></div>
-<div class="panel"><h3>管理已保存比赛</h3><div id="adminMatchList" class="empty">载入中…</div></div></div></section>
-<footer>REAPER SQUAD ESPORTS · PUBG MOBILE · PMGC SCORING FORMAT</footer>
-</main>
-<script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc,setDoc,query,orderBy,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig={
-  apiKey:"AIzaSyDekPmstKjjWb-CDyRhJ6a4w6hKAm1CyWw",
-  authDomain:"reaper-squad-esportss.firebaseapp.com",
-  projectId:"reaper-squad-esportss",
-  storageBucket:"reaper-squad-esportss.firebasestorage.app",
-  messagingSenderId:"648536201607",
-  appId:"1:648536201607:web:f2457dbb87c5d572181b22",
-  measurementId:"G-MRKCHJ6B6E"
-};
-const ADMIN_UID="GmkehgoarFPEZk1Hmnl8Dh0X3Ui2";
-const MAPS=["Erangel","Miramar","Sanhok","Vikendi","Livik","Rondo"];
-const PLACE_POINTS={1:10,2:6,3:5,4:4,5:3,6:2,7:1,8:1};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-let currentUser=null,isAdmin=false,teams=[],matches=[],selectedTeams=[],editingTeamId=null,editingMatchId=null;
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const pts=p=>PLACE_POINTS[Number(p)]??0;
-function err(e){console.error(e);alert("操作失败："+(e?.message||e))}
-window.showTab=id=>{
-  document.querySelectorAll("main>section[id$='Tab']").forEach(x=>x.classList.add("hidden"));
-  $(id+"Tab").classList.remove("hidden");
-  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
-};
-window.signIn=async()=>{try{await setPersistence(auth,browserLocalPersistence);await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){err(e)}};
-window.signOutUser=async()=>{try{await signOut(auth)}catch(e){err(e)}};
-
-onAuthStateChanged(auth,async u=>{
-  currentUser=u;isAdmin=!!u&&u.uid===ADMIN_UID;
-  $("userLabel").textContent=u?(u.displayName||u.email||"已登录"):"访客模式";
-  $("loginBtn").classList.toggle("hidden",!!u);$("logoutBtn").classList.toggle("hidden",!u);
-  $("adminGate").classList.toggle("hidden",isAdmin);$("adminPanel").classList.toggle("hidden",!isAdmin);
-  await loadAll();
-});
-async function loadAll(){
-  try{
-    const [a,b]=await Promise.all([getDocs(collection(db,"teams")),getDocs(query(collection(db,"matches"),orderBy("createdAt","desc")))]);
-    teams=a.docs.map(d=>({id:d.id,...d.data()}));matches=b.docs.map(d=>({id:d.id,...d.data()}));renderAll();
-  }catch(e){console.error(e);$("boardBody").innerHTML='<tr><td colspan="7" class="empty">读取失败，请检查 Firestore Rules 是否已更新。</td></tr>';}
-}
-function getRounds(m){return Array.isArray(m.rounds)?m.rounds:[{results:m.results||[]}];}
-function kills(m){return getRounds(m).reduce((n,r)=>n+(r.results||[]).reduce((a,x)=>a+Number(x.kills||0),0),0);}
-function aggregate(){
-  const totals={};
-  for(const m of matches){
-    const eventTeams={};
-    for(const r of getRounds(m))for(const x of (r.results||[])){
-      const key=x.team;if(!eventTeams[key])eventTeams[key]={kills:0,placementPoints:0,compensation:0,wins:0,lastPlacement:Number(x.placement||0)};
-      const row=eventTeams[key],placement=Number(x.placement||0);
-      row.kills+=Number(x.kills||0);row.placementPoints+=pts(placement);row.compensation+=Number(x.compensation||0);
-      if(placement===1)row.wins++;row.lastPlacement=placement;
-    }
-    for(const [name,v] of Object.entries(eventTeams)){
-      if(!totals[name])totals[name]={team:name,matches:0,wins:0,kills:0,placementPoints:0,compensation:0,points:0,lastPlacement:v.lastPlacement,hasLatest:true};
-      const t=totals[name];t.matches++;t.wins+=v.wins;t.kills+=v.kills;t.placementPoints+=v.placementPoints;t.compensation+=v.compensation;t.points+=v.kills+v.placementPoints+v.compensation;
-      if(t.hasLatest){t.lastPlacement=v.lastPlacement;t.hasLatest=false;}
-    }
-  }
-  return Object.values(totals).sort((a,b)=>b.points-a.points||b.wins-a.wins||b.placementPoints-a.placementPoints||b.kills-a.kills||a.lastPlacement-b.lastPlacement||a.team.localeCompare(b.team));
-}
-function renderAll(){
-  const rows=aggregate();
-  $("boardBody").innerHTML=rows.length?rows.map((x,i)=>`<tr><td class="rank">#${i+1}</td><td><b>${esc(x.team)}</b></td><td>${x.matches}</td><td>${x.wins}</td><td>${x.placementPoints}</td><td>${x.kills}</td><td class="rank">${x.points}</td></tr>`).join(""):'<tr><td colspan="7" class="empty">暂时没有比赛数据</td></tr>';
-  $("statMatches").textContent=matches.length;$("statTeams").textContent=new Set([...teams.map(t=>t.name),...rows.map(x=>x.team)]).size;$("statKills").textContent=matches.reduce((n,m)=>n+kills(m),0);
-  $("teamList").innerHTML=teams.length?teams.map(t=>`<div class="teamcard"><div class="teamhead"><b>${esc(t.name)}</b><span class="tag">4 名队员</span></div><div class="players">${(t.players||[]).map(p=>`<span class="player">${esc(p)}</span>`).join("")}</div></div>`).join(""):'<div class="empty">管理员尚未登记队伍</div>';
-  $("matchList").innerHTML=matches.length?matches.map(m=>{
-    if(!m.rounds)return `<div class="matchcard"><b>${esc(m.name||"旧版比赛记录")}</b><span class="tag">旧版记录</span><p class="muted">${esc(m.date||"")} · 原始记录已保留</p></div>`;
-    // 当前比赛独立统计：逐把汇总该局所有参赛队伍的数据，M1-M5 不混合。
-    let totalKills=0,totalPlacement=0,totalCompensation=0;
-    const roundRows=m.rounds.map((r,i)=>{
-      let roundKills=0,roundPlacement=0,roundCompensation=0;
-      for(const x of (r.results||[])){
-        roundKills+=Number(x.kills||0);
-        roundPlacement+=pts(x.placement);
-        roundCompensation+=Number(x.compensation||0);
-      }
-      totalKills+=roundKills;
-      totalPlacement+=roundPlacement;
-      totalCompensation+=roundCompensation;
-      return {label:`${m.name||"比赛"}M${i+1}`,kills:roundKills,placement:roundPlacement,compensation:roundCompensation,total:roundKills+roundPlacement+roundCompensation};
-    });
-    const grand=totalKills+totalPlacement+totalCompensation;
-    return `<div class="matchcard"><h4>${esc(m.name||"未命名比赛")} <span class="tag">5 把</span></h4><p class="muted">${esc(m.date||"")}</p><p>${m.rounds.map((r,i)=>`<span class="tag">第${i+1}把：${esc(r.map||"未指定地图")}</span>`).join("")}</p><div class="summary"><div><b>${totalPlacement}</b><span>总排名分</span></div><div><b>${totalKills}</b><span>总淘汰数</span></div><div><b>${grand}</b><span>总分（含补偿分）</span></div></div><div class="tablewrap"><table><thead><tr><th>局数</th><th>排名分</th><th>淘汰</th><th>总分</th></tr></thead><tbody>${roundRows.map(v=>`<tr><td><b>${esc(v.label)}</b></td><td>${v.placement}</td><td>${v.kills}</td><td class="rank">${v.total}</td></tr>`).join("")}<tr><th>总计</th><th>${totalPlacement}</th><th>${totalKills}</th><th class="rank">${grand}</th></tr></tbody></table></div></div>`;
-  }).join(""):'<div class="empty">还没有比赛记录</div>';
-  renderPicker();renderAdminMatches();
-}
-window.saveTeam=async()=>{
-  if(!isAdmin)return alert("只有管理员可以操作");
-  const name=$("teamName").value.trim(),players=[1,2,3,4].map(i=>$("p"+i).value.trim());
-  if(!name||players.some(x=>!x))return alert("请填写队伍名称和完整 4 名队员");
-  try{
-    const duplicate=teams.find(t=>t.name.toLowerCase()===name.toLowerCase()&&t.id!==editingTeamId);
-    if(duplicate)return alert("已经存在同名队伍，请修改队伍名称。");
-    const id=editingTeamId||crypto.randomUUID();
-    await setDoc(doc(db,"teams",id),{name,players,updatedAt:serverTimestamp()},{merge:true});
-    cancelTeamEdit();await loadAll();alert("队伍已保存");
-  }catch(e){err(e)}
-};
-window.editTeam=id=>{
-  if(!isAdmin)return;const t=teams.find(x=>x.id===id);if(!t)return;
-  editingTeamId=id;$("teamName").value=t.name||"";[1,2,3,4].forEach(i=>$("p"+i).value=(t.players||[])[i-1]||"");
-  $("teamFormTitle").textContent="修改队伍资料";$("cancelTeamEdit").classList.remove("hidden");$("teamFormPanel").classList.add("editing");showTab("admin");$("teamName").focus();
-};
-window.cancelTeamEdit=()=>{
-  editingTeamId=null;$("teamName").value="";[1,2,3,4].forEach(i=>$("p"+i).value="");
-  $("teamFormTitle").textContent="建立 / 更新队伍（固定 4 名队员）";$("cancelTeamEdit").classList.add("hidden");$("teamFormPanel").classList.remove("editing");
-};
-function renderPicker(){
-  $("teamPicker").innerHTML=teams.length?teams.map(t=>`<label style="display:inline-flex;gap:6px;align-items:center;margin:5px 12px 5px 0"><input type="checkbox" value="${esc(t.id)}" ${selectedTeams.some(x=>x.id===t.id)?"checked":""} onchange="toggleTeam('${esc(t.id)}',this.checked)"> ${esc(t.name)}</label>`).join(""):"请先建立队伍。";
-}
-window.toggleTeam=(id,on)=>{
-  const t=teams.find(x=>x.id===id);if(on&&t&&!selectedTeams.some(x=>x.id===id))selectedTeams.push(t);
-  if(!on)selectedTeams=selectedTeams.filter(x=>x.id!==id);renderParticipants();renderRounds();
-};
-function renderParticipants(){
-  $("participantPickers").innerHTML=selectedTeams.map(t=>`<div class="teamcard"><b>${esc(t.name)} · 本场出战队员（固定 4 人）</b><div class="checkplayers">${(t.players||[]).map(p=>`<label><input type="checkbox" class="part-${esc(t.id)}" value="${esc(p)}" checked> ${esc(p)}</label>`).join("")}</div></div>`).join("");
-}
-function renderRounds(){
-  $("roundEditors").innerHTML=Array.from({length:5},(_,i)=>`<div class="round"><div class="roundhead"><h4>第 ${i+1} 把</h4><span class="tag">Round ${i+1}</span></div><div class="field"><label>本局地图</label><select id="map${i}">${MAPS.map(m=>`<option value="${m}">${m}</option>`).join("")}</select></div>${selectedTeams.length?selectedTeams.map(t=>`<div class="teamround"><b>${esc(t.name)}</b><div class="inline"><div class="field"><label>当局排名</label><select id="pl-${i}-${esc(t.id)}">${Array.from({length:16},(_,j)=>`<option value="${j+1}">${j+1} 名（${pts(j+1)} 排名分）</option>`).join("")}</select></div><div class="field"><label>淘汰数</label><input id="ki-${i}-${esc(t.id)}" type="number" min="0" max="99" value="0" inputmode="numeric"></div></div><div class="field"><label>官方补偿分（可选，默认 0）</label><input id="cp-${i}-${esc(t.id)}" type="number" min="0" max="99" value="0" inputmode="numeric"></div></div>`).join(""):'<p class="muted">请先在上方勾选参赛队伍，之后即可输入本局排名和淘汰数。</p>'}</div>`).join("");
-}
-function renderAdminMatches(){
-  $("adminMatchList").innerHTML=matches.length?matches.map(m=>`<div class="teamcard"><div class="teamhead"><div><b>${esc(m.name||"旧版比赛")}</b><div class="muted">${esc(m.date||"")}</div></div><div class="buttonrow"><button class="secondary" onclick="editMatch('${esc(m.id)}')">编辑</button><button class="danger" onclick="removeMatch('${esc(m.id)}')">删除</button></div></div></div>`).join(""):'<div class="empty">暂无比赛</div>';
-}
-window.editMatch=id=>{
-  if(!isAdmin)return;const m=matches.find(x=>x.id===id);if(!m)return;
-  if(!Array.isArray(m.rounds)||m.rounds.length!==5)return alert("这条旧版比赛记录不是完整五局格式，暂时不能使用五局编辑器修改。");
-  editingMatchId=id;$("matchName").value=m.name||"";$("matchDate").value=m.date||"";
-  const names=new Set(m.rounds.flatMap(r=>(r.results||[]).map(x=>x.team)));
-  selectedTeams=teams.filter(t=>names.has(t.name));renderPicker();renderParticipants();renderRounds();
-  m.rounds.forEach((r,i)=>{
-    const map=$("map"+i);if(map&&MAPS.includes(r.map))map.value=r.map;
-    for(const x of (r.results||[])){
-      const t=selectedTeams.find(z=>z.name===x.team);if(!t)continue;
-      const pl=$("pl-"+i+"-"+t.id),ki=$("ki-"+i+"-"+t.id),cp=$("cp-"+i+"-"+t.id);
-      if(pl)pl.value=String(x.placement||1);if(ki)ki.value=Number(x.kills||0);if(cp)cp.value=Number(x.compensation||0);
-      const chosen=new Set(x.participants||[]);
-      document.querySelectorAll(".part-"+CSS.escape(t.id)).forEach(el=>{el.checked=!chosen.size||chosen.has(el.value)});
-    }
-  });
-  $("matchFormTitle").textContent="修改已保存的五局比赛";$("saveMatchBtn").textContent="保存比赛修改";$("cancelMatchEdit").classList.remove("hidden");showTab("admin");$("matchName").focus();
-};
-window.cancelMatchEdit=()=>{
-  editingMatchId=null;selectedTeams=[];$("matchName").value="";$("matchDate").value=new Date().toISOString().slice(0,10);
-  $("matchFormTitle").textContent="创建五局比赛";$("saveMatchBtn").textContent="保存整场比赛（5 把）";$("cancelMatchEdit").classList.add("hidden");
-  renderPicker();renderParticipants();renderRounds();
-};
-window.saveMatch=async()=>{
-  if(!isAdmin)return alert("只有管理员可以操作");
-  const name=$("matchName").value.trim(),date=$("matchDate").value;
-  if(!name||!date)return alert("请填写比赛名称和日期");
-  if(!selectedTeams.length)return alert("请至少选择一支队伍");
-  const rounds=[];
-  for(let i=0;i<5;i++){
-    const results=[],usedPlacements=new Set();
-    for(const t of selectedTeams){
-      const chosen=[...document.querySelectorAll(".part-"+CSS.escape(t.id)+":checked")].map(x=>x.value);
-      if(chosen.length!==4)return alert(t.name+" 必须选择固定 4 名出战队员");
-      const placement=Number($("pl-"+i+"-"+t.id).value),ki=Number($("ki-"+i+"-"+t.id).value),compensation=Number($("cp-"+i+"-"+t.id).value||0);
-      if(usedPlacements.has(placement))return alert("第 "+(i+1)+" 把有重复排名（"+placement+" 名），请检查每支队伍的最终名次。");
-      usedPlacements.add(placement);
-      if(!Number.isInteger(ki)||ki<0||ki>99)return alert("淘汰数必须是 0–99 的整数");
-      if(!Number.isInteger(compensation)||compensation<0||compensation>99)return alert("补偿分必须是 0–99 的整数");
-      results.push({team:t.name,participants:chosen,placement,kills:ki,compensation});
-    }
-    rounds.push({map:$("map"+i).value,results});
-  }
-  try{
-    const data={name,date,rounds,updatedAt:serverTimestamp(),updatedBy:currentUser.uid,scoring:"PMGC_10_POINT"};
-    if(editingMatchId){await setDoc(doc(db,"matches",editingMatchId),data,{merge:true});cancelMatchEdit();await loadAll();alert("比赛资料已修改，排行榜已自动更新");}
-    else{await addDoc(collection(db,"matches"),{...data,createdAt:serverTimestamp(),createdBy:currentUser.uid});$("matchName").value="";selectedTeams=[];renderAll();await loadAll();alert("五局比赛已保存，PMGC 积分排行榜已自动更新");}
-  }catch(e){err(e)}
-};
-window.removeMatch=async id=>{if(!isAdmin||!confirm("确定删除这场比赛？删除后无法恢复。"))return;try{await deleteDoc(doc(db,"matches",id));if(editingMatchId===id)cancelMatchEdit();await loadAll()}catch(e){err(e)}};
-$("matchDate").value=new Date().toISOString().slice(0,10);
-renderParticipants();renderRounds();
-</script>
-</body>
-</html>
+‎<!doctype html>
+‎<html lang="zh-CN">
+‎<head>
+‎<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+‎<title>Reaper Squad Esports</title>
+‎<style>
+‎:root{--bg:#090a0d;--panel:#12151b;--gold:#d7ad55;--gold2:#f2d48a;--muted:#9aa2ad;--line:#2b303a}
+‎*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#191710 0,#090a0d 42%);color:#f4f1e9;font-family:Arial,"Noto Sans SC",sans-serif}
+‎header{padding:18px 12px;border-bottom:1px solid #443820;background:#0c0d10;position:sticky;top:0;z-index:5}.wrap{max-width:1100px;margin:auto;padding:0 14px}
+‎.top,.brand,.actions,.tabs,.teamhead,.roundhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.brand{justify-content:flex-start}.logo{width:46px;height:46px;border:2px solid var(--gold);border-radius:12px;display:grid;place-items:center;color:var(--gold2);font-weight:900}.brand h1{font-size:18px;margin:0;letter-spacing:1px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:3px;margin-top:4px}
+‎button{border:1px solid #6e572c;background:#211b10;color:var(--gold2);padding:10px 14px;border-radius:9px;cursor:pointer;font-weight:700}button.primary{background:linear-gradient(135deg,#e4bd69,#a87c32);color:#17120a;border:0}button.danger{border-color:#754343;color:#ffaaaa;background:#211313}button.secondary{background:#111820;border-color:#465363;color:#d7e0eb}
+‎nav{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}nav button{background:#11141a;border-color:var(--line);color:#b9bec7}nav button.active{color:var(--gold2);border-color:var(--gold)}
+‎.hero{padding:26px 0 12px}.eyebrow{color:var(--gold);font-size:11px;letter-spacing:4px;font-weight:bold}.hero h2{font-size:clamp(25px,5vw,38px);margin:9px 0}.muted{color:var(--muted)}.hidden{display:none!important}
+‎.stats,.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.stat,.panel,.round{background:linear-gradient(145deg,#171a21,#101217);border:1px solid var(--line);border-radius:14px;padding:15px}.stat b,.summary b{font-size:23px;color:var(--gold2);display:block}.stat span,.summary span{color:var(--muted);font-size:12px}
+‎.panel{margin:14px 0}.panel h3{margin:0 0 14px;color:var(--gold2);font-size:17px}.field{display:flex;flex-direction:column;gap:6px;margin:9px 0}.field label{font-size:12px;color:#c4c8cf}.field input,.field select{width:100%;background:#0b0e13;border:1px solid #343b46;color:#f4f1e9;padding:11px;border-radius:8px;min-width:0}
+‎.grid2,.inline{display:grid;grid-template-columns:1fr 1fr;gap:10px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px 8px;border-bottom:1px solid #292e37;text-align:left;white-space:nowrap}th{color:var(--gold)}.tablewrap{overflow-x:auto}.rank{color:var(--gold2);font-weight:800}
+‎.notice,.teamcard{padding:12px;border:1px solid #66532d;background:#1b170f;border-radius:9px;color:#e5d4ad;font-size:13px;margin:10px 0}.teamcard{background:#0d1015;border-color:#343b46;color:#eee}.players{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.player,.tag{font-size:11px;border:1px solid #424956;border-radius:20px;padding:5px 9px;color:#cbd0d8;display:inline-block;margin:2px}
+‎.round{margin:12px 0}.round h4{margin:0;color:var(--gold2)}.teamround{border-top:1px solid #303641;padding-top:8px;margin-top:8px}.checkplayers{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.checkplayers label{font-size:12px;background:#10141a;border:1px solid #303743;border-radius:8px;padding:8px;display:flex;gap:7px}
+‎.empty{text-align:center;color:var(--muted);padding:22px}.matchcard{border-bottom:1px solid #303641;padding:14px 0}.score-note{font-size:12px;color:#b9a77f;line-height:1.7}.field small{color:var(--muted)}footer{text-align:center;color:#666d78;font-size:11px;padding:24px}.buttonrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.editing{border-color:var(--gold)!important;box-shadow:0 0 0 1px #6e572c}
+‎@media(max-width:650px){.grid2,.inline{grid-template-columns:1fr}.stats,.summary{gap:6px}.stat,.summary div{padding:9px}.stat b,.summary b{font-size:18px}header{padding:13px 0}.wrap{padding:0 11px}}
+‎</style>
+‎</head>
+‎<body>
+‎<header><div class="wrap top"><div class="brand"><div class="logo">RS</div><div><h1>REAPER SQUAD ESPORTS</h1><small>PUBG MOBILE SCRIM SYSTEM</small></div></div><div class="actions"><span id="userLabel" class="muted"></span><button id="loginBtn" onclick="signIn()">Google 登录</button><button id="logoutBtn" class="hidden" onclick="signOutUser()">退出登录</button></div></div></header>
+‎<main class="wrap">
+‎<section class="hero"><div class="eyebrow">COMPETITIVE RECORDS</div><h2>比赛数据中心</h2><p class="muted">五局赛制 · PMGC 积分 · 实时排行榜</p></section>
+‎<div class="stats"><div class="stat"><b id="statMatches">0</b><span>比赛场次（赛事）</span></div><div class="stat"><b id="statTeams">0</b><span>参赛队伍</span></div><div class="stat"><b id="statKills">0</b><span>总淘汰</span></div></div>
+‎<nav><button class="active" data-tab="board" onclick="showTab('board')">排行榜</button><button data-tab="matches" onclick="showTab('matches')">比赛记录</button><button data-tab="teams" onclick="showTab('teams')">队伍名单</button><button data-tab="admin" onclick="showTab('admin')">管理中心</button></nav>
+‎<section id="boardTab"><div class="panel"><h3>赛季排行榜</h3><div class="notice score-note">PMGC 官方排名分：第 1 名 10 分、第 2 名 6 分、第 3 名 5 分、第 4 名 4 分、第 5 名 3 分、第 6 名 2 分、第 7–8 名 1 分、第 9–16 名 0 分。每淘汰 1 人 = 1 分。平分依次比较 WWCD、排名积分、淘汰数、最近一局排名。</div><div class="tablewrap"><table><thead><tr><th>排名</th><th>队伍</th><th>赛事</th><th>WWCD</th><th>排名分</th><th>淘汰</th><th>总积分</th></tr></thead><tbody id="boardBody"><tr><td colspan="7" class="empty">载入中…</td></tr></tbody></table></div></div></section>
+‎<section id="matchesTab" class="hidden"><div class="panel"><h3>比赛记录</h3><div id="matchList" class="empty">载入中…</div></div></section>
+‎<section id="teamsTab" class="hidden"><div class="panel"><h3>已登记队伍</h3><div id="teamList" class="empty">载入中…</div></div></section>
+‎<section id="adminTab" class="hidden"><div id="adminGate" class="notice">管理中心仅限管理员 Google 账号使用。成员和访客只能查看数据。</div><div id="adminPanel" class="hidden">
+‎<div class="panel" id="teamFormPanel"><h3 id="teamFormTitle">建立 / 更新队伍（固定 4 名队员）</h3><div class="field"><label>队伍名称</label><input id="teamName" placeholder="队伍名称"></div><div class="grid2"><div class="field"><label>队员 1</label><input id="p1" placeholder="队员名称"></div><div class="field"><label>队员 2</label><input id="p2" placeholder="队员名称"></div><div class="field"><label>队员 3</label><input id="p3" placeholder="队员名称"></div><div class="field"><label>队员 4</label><input id="p4" placeholder="队员名称"></div></div><div class="buttonrow"><button class="primary" onclick="saveTeam()">保存队伍</button><button id="cancelTeamEdit" class="secondary hidden" onclick="cancelTeamEdit()">取消修改</button></div></div>
+‎<div class="panel"><h3 id="matchFormTitle">创建五局比赛</h3><div class="grid2"><div class="field"><label>比赛名称</label><input id="matchName" placeholder="例如：周末训练赛"></div><div class="field"><label>比赛日期</label><input id="matchDate" type="date"></div></div><div class="field"><label>选择参赛队伍</label><div id="teamPicker" class="notice">请先建立队伍。</div></div><div id="participantPickers"></div><div id="roundEditors"></div><div class="buttonrow"><button id="saveMatchBtn" class="primary" onclick="saveMatch()">保存整场比赛（5 把）</button><button id="cancelMatchEdit" class="secondary hidden" onclick="cancelMatchEdit()">取消修改</button></div></div>
+‎<div class="panel"><h3>管理已保存比赛</h3><div id="adminMatchList" class="empty">载入中…</div></div></div></section>
+‎<footer>REAPER SQUAD ESPORTS · PUBG MOBILE · PMGC SCORING FORMAT</footer>
+‎</main>
+‎<script type="module">
+‎import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+‎import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+‎import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc,setDoc,query,orderBy,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+‎
+‎const firebaseConfig={
+‎  apiKey:"AIzaSyDekPmstKjjWb-CDyRhJ6a4w6hKAm1CyWw",
+‎  authDomain:"reaper-squad-esportss.firebaseapp.com",
+‎  projectId:"reaper-squad-esportss",
+‎  storageBucket:"reaper-squad-esportss.firebasestorage.app",
+‎  messagingSenderId:"648536201607",
+‎  appId:"1:648536201607:web:f2457dbb87c5d572181b22",
+‎  measurementId:"G-MRKCHJ6B6E"
+‎};
+‎const ADMIN_UID="GmkehgoarFPEZk1Hmnl8Dh0X3Ui2";
+‎const MAPS=["Erangel","Miramar","Sanhok","Vikendi","Livik","Rondo"];
+‎const PLACE_POINTS={1:10,2:6,3:5,4:4,5:3,6:2,7:1,8:1};
+‎const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+‎let currentUser=null,isAdmin=false,teams=[],matches=[],selectedTeams=[],editingTeamId=null,editingMatchId=null;
+‎const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+‎const pts=p=>PLACE_POINTS[Number(p)]??0;
+‎function err(e){console.error(e);alert("操作失败："+(e?.message||e))}
+‎window.showTab=id=>{
+‎  document.querySelectorAll("main>section[id$='Tab']").forEach(x=>x.classList.add("hidden"));
+‎  $(id+"Tab").classList.remove("hidden");
+‎  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
+‎};
+‎window.signIn=async()=>{try{await setPersistence(auth,browserLocalPersistence);await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){err(e)}};
+‎window.signOutUser=async()=>{try{await signOut(auth)}catch(e){err(e)}};
+‎
+‎onAuthStateChanged(auth,async u=>{
+‎  currentUser=u;isAdmin=!!u&&u.uid===ADMIN_UID;
+‎  $("userLabel").textContent=u?(u.displayName||u.email||"已登录"):"访客模式";
+‎  $("loginBtn").classList.toggle("hidden",!!u);$("logoutBtn").classList.toggle("hidden",!u);
+‎  $("adminGate").classList.toggle("hidden",isAdmin);$("adminPanel").classList.toggle("hidden",!isAdmin);
+‎  await loadAll();
+‎});
+‎async function loadAll(){
+‎  try{
+‎    const [a,b]=await Promise.all([getDocs(collection(db,"teams")),getDocs(query(collection(db,"matches"),orderBy("createdAt","desc")))]);
+‎    teams=a.docs.map(d=>({id:d.id,...d.data()}));matches=b.docs.map(d=>({id:d.id,...d.data()}));renderAll();
+‎  }catch(e){console.error(e);$("boardBody").innerHTML='<tr><td colspan="7" class="empty">读取失败，请检查 Firestore Rules 是否已更新。</td></tr>';}
+‎}
+‎function getRounds(m){return Array.isArray(m.rounds)?m.rounds:[{results:m.results||[]}];}
+‎function kills(m){return getRounds(m).reduce((n,r)=>n+(r.results||[]).reduce((a,x)=>a+Number(x.kills||0),0),0);}
+‎function aggregate(){
+‎  const totals={};
+‎  for(const m of matches){
+‎    const eventTeams={};
+‎    for(const r of getRounds(m))for(const x of (r.results||[])){
+‎      const key=x.team;if(!eventTeams[key])eventTeams[key]={kills:0,placementPoints:0,compensation:0,wins:0,lastPlacement:Number(x.placement||0)};
+‎      const row=eventTeams[key],placement=Number(x.placement||0);
+‎      row.kills+=Number(x.kills||0);row.placementPoints+=pts(placement);row.compensation+=Number(x.compensation||0);
+‎      if(placement===1)row.wins++;row.lastPlacement=placement;
+‎    }
+‎    for(const [name,v] of Object.entries(eventTeams)){
+‎      if(!totals[name])totals[name]={team:name,matches:0,wins:0,kills:0,placementPoints:0,compensation:0,points:0,lastPlacement:v.lastPlacement,hasLatest:true};
+‎      const t=totals[name];t.matches++;t.wins+=v.wins;t.kills+=v.kills;t.placementPoints+=v.placementPoints;t.compensation+=v.compensation;t.points+=v.kills+v.placementPoints+v.compensation;
+‎      if(t.hasLatest){t.lastPlacement=v.lastPlacement;t.hasLatest=false;}
+‎    }
+‎  }
+‎  return Object.values(totals).sort((a,b)=>b.points-a.points||b.wins-a.wins||b.placementPoints-a.placementPoints||b.kills-a.kills||a.lastPlacement-b.lastPlacement||a.team.localeCompare(b.team));
+‎}
+‎function renderAll(){
+‎  const rows=aggregate();
+‎  $("boardBody").innerHTML=rows.length?rows.map((x,i)=>`<tr><td class="rank">#${i+1}</td><td><b>${esc(x.team)}</b></td><td>${x.matches}</td><td>${x.wins}</td><td>${x.placementPoints}</td><td>${x.kills}</td><td class="rank">${x.points}</td></tr>`).join(""):'<tr><td colspan="7" class="empty">暂时没有比赛数据</td></tr>';
+‎  $("statMatches").textContent=matches.length;$("statTeams").textContent=new Set([...teams.map(t=>t.name),...rows.map(x=>x.team)]).size;$("statKills").textContent=matches.reduce((n,m)=>n+kills(m),0);
+‎  $("teamList").innerHTML=teams.length?teams.map(t=>`<div class="teamcard"><div class="teamhead"><b>${esc(t.name)}</b><span class="tag">4 名队员</span></div><div class="players">${(t.players||[]).map(p=>`<span class="player">${esc(p)}</span>`).join("")}</div></div>`).join(""):'<div class="empty">管理员尚未登记队伍</div>';
+‎  $("matchList").innerHTML=matches.length?matches.map(m=>{
+‎    if(!m.rounds)return `<div class="matchcard"><b>${esc(m.name||"旧版比赛记录")}</b><span class="tag">旧版记录</span><p class="muted">${esc(m.date||"")} · 原始记录已保留</p></div>`;
+‎    // 当前比赛独立统计：逐把汇总该局所有参赛队伍的数据，M1-M5 不混合。
+‎    let totalKills=0,totalPlacement=0,totalCompensation=0;
+‎    const roundRows=m.rounds.map((r,i)=>{
+‎      let roundKills=0,roundPlacement=0,roundCompensation=0;
+‎      for(const x of (r.results||[])){
+‎        roundKills+=Number(x.kills||0);
+‎        roundPlacement+=pts(x.placement);
+‎        roundCompensation+=Number(x.compensation||0);
+‎      }
+‎      totalKills+=roundKills;
+‎      totalPlacement+=roundPlacement;
+‎      totalCompensation+=roundCompensation;
+‎      return {label:`${m.name||"比赛"}M${i+1}`,rankings:(r.results||[]).map(x=>`第${Number(x.placement||0)}名`).join("<br>")||"—",kills:roundKills,placement:roundPlacement,compensation:roundCompensation,total:roundKills+roundPlacement+roundCompensation};
+‎    });
+‎    const grand=totalKills+totalPlacement+totalCompensation;
+‎    return `<div class="matchcard"><h4>${esc(m.name||"未命名比赛")} <span class="tag">5 把</span></h4><p class="muted">${esc(m.date||"")}</p><p>${m.rounds.map((r,i)=>`<span class="tag">第${i+1}把：${esc(r.map||"未指定地图")}</span>`).join("")}</p><div class="summary"><div><b>${totalPlacement}</b><span>总排名分</span></div><div><b>${totalKills}</b><span>总淘汰数</span></div><div><b>${grand}</b><span>总分（含补偿分）</span></div></div><div class="tablewrap"><table><thead><tr><th>局数</th><th>第几名</th><th>排名分</th><th>淘汰</th><th>总分</th></tr></thead><tbody>${roundRows.map(v=>`<tr><td><b>${esc(v.label)}</b></td><td>${v.rankings||"—"}</td><td>${v.placement}</td><td>${v.kills}</td><td class="rank">${v.total}</td></tr>`).join("")}<tr><th>总计</th><th>—</th><th>${totalPlacement}</th><th>${totalKills}</th><th class="rank">${grand}</th></tr></tbody></table></div></div>`;
+‎  }).join(""):'<div class="empty">还没有比赛记录</div>';
+‎  renderPicker();renderAdminMatches();
+‎}
+‎window.saveTeam=async()=>{
+‎  if(!isAdmin)return alert("只有管理员可以操作");
+‎  const name=$("teamName").value.trim(),players=[1,2,3,4].map(i=>$("p"+i).value.trim());
+‎  if(!name||players.some(x=>!x))return alert("请填写队伍名称和完整 4 名队员");
+‎  try{
+‎    const duplicate=teams.find(t=>t.name.toLowerCase()===name.toLowerCase()&&t.id!==editingTeamId);
+‎    if(duplicate)return alert("已经存在同名队伍，请修改队伍名称。");
+‎    const id=editingTeamId||crypto.randomUUID();
+‎    await setDoc(doc(db,"teams",id),{name,players,updatedAt:serverTimestamp()},{merge:true});
+‎    cancelTeamEdit();await loadAll();alert("队伍已保存");
+‎  }catch(e){err(e)}
+‎};
+‎window.editTeam=id=>{
+‎  if(!isAdmin)return;const t=teams.find(x=>x.id===id);if(!t)return;
+‎  editingTeamId=id;$("teamName").value=t.name||"";[1,2,3,4].forEach(i=>$("p"+i).value=(t.players||[])[i-1]||"");
+‎  $("teamFormTitle").textContent="修改队伍资料";$("cancelTeamEdit").classList.remove("hidden");$("teamFormPanel").classList.add("editing");showTab("admin");$("teamName").focus();
+‎};
+‎window.cancelTeamEdit=()=>{
+‎  editingTeamId=null;$("teamName").value="";[1,2,3,4].forEach(i=>$("p"+i).value="");
+‎  $("teamFormTitle").textContent="建立 / 更新队伍（固定 4 名队员）";$("cancelTeamEdit").classList.add("hidden");$("teamFormPanel").classList.remove("editing");
+‎};
+‎function renderPicker(){
+‎  $("teamPicker").innerHTML=teams.length?teams.map(t=>`<label style="display:inline-flex;gap:6px;align-items:center;margin:5px 12px 5px 0"><input type="checkbox" value="${esc(t.id)}" ${selectedTeams.some(x=>x.id===t.id)?"checked":""} onchange="toggleTeam('${esc(t.id)}',this.checked)"> ${esc(t.name)}</label>`).join(""):"请先建立队伍。";
+‎}
+‎window.toggleTeam=(id,on)=>{
+‎  const t=teams.find(x=>x.id===id);if(on&&t&&!selectedTeams.some(x=>x.id===id))selectedTeams.push(t);
+‎  if(!on)selectedTeams=selectedTeams.filter(x=>x.id!==id);renderParticipants();renderRounds();
+‎};
+‎function renderParticipants(){
+‎  $("participantPickers").innerHTML=selectedTeams.map(t=>`<div class="teamcard"><b>${esc(t.name)} · 本场出战队员（固定 4 人）</b><div class="checkplayers">${(t.players||[]).map(p=>`<label><input type="checkbox" class="part-${esc(t.id)}" value="${esc(p)}" checked> ${esc(p)}</label>`).join("")}</div></div>`).join("");
+‎}
+‎function renderRounds(){
+‎  $("roundEditors").innerHTML=Array.from({length:5},(_,i)=>`<div class="round"><div class="roundhead"><h4>第 ${i+1} 把</h4><span class="tag">Round ${i+1}</span></div><div class="field"><label>本局地图</label><select id="map${i}">${MAPS.map(m=>`<option value="${m}">${m}</option>`).join("")}</select></div>${selectedTeams.length?selectedTeams.map(t=>`<div class="teamround"><b>${esc(t.name)}</b><div class="inline"><div class="field"><label>当局排名</label><select id="pl-${i}-${esc(t.id)}">${Array.from({length:16},(_,j)=>`<option value="${j+1}">${j+1} 名（${pts(j+1)} 排名分）</option>`).join("")}</select></div><div class="field"><label>淘汰数</label><input id="ki-${i}-${esc(t.id)}" type="number" min="0" max="99" value="0" inputmode="numeric"></div></div><div class="field"><label>官方补偿分（可选，默认 0）</label><input id="cp-${i}-${esc(t.id)}" type="number" min="0" max="99" value="0" inputmode="numeric"></div></div>`).join(""):'<p class="muted">请先在上方勾选参赛队伍，之后即可输入本局排名和淘汰数。</p>'}</div>`).join("");
+‎}
+‎function renderAdminMatches(){
+‎  $("adminMatchList").innerHTML=matches.length?matches.map(m=>`<div class="teamcard"><div class="teamhead"><div><b>${esc(m.name||"旧版比赛")}</b><div class="muted">${esc(m.date||"")}</div></div><div class="buttonrow"><button class="secondary" onclick="editMatch('${esc(m.id)}')">编辑</button><button class="danger" onclick="removeMatch('${esc(m.id)}')">删除</button></div></div></div>`).join(""):'<div class="empty">暂无比赛</div>';
+‎}
+‎window.editMatch=id=>{
+‎  if(!isAdmin)return;const m=matches.find(x=>x.id===id);if(!m)return;
+‎  if(!Array.isArray(m.rounds)||m.rounds.length!==5)return alert("这条旧版比赛记录不是完整五局格式，暂时不能使用五局编辑器修改。");
+‎  editingMatchId=id;$("matchName").value=m.name||"";$("matchDate").value=m.date||"";
+‎  const names=new Set(m.rounds.flatMap(r=>(r.results||[]).map(x=>x.team)));
+‎  selectedTeams=teams.filter(t=>names.has(t.name));renderPicker();renderParticipants();renderRounds();
+‎  m.rounds.forEach((r,i)=>{
+‎    const map=$("map"+i);if(map&&MAPS.includes(r.map))map.value=r.map;
+‎    for(const x of (r.results||[])){
+‎      const t=selectedTeams.find(z=>z.name===x.team);if(!t)continue;
+‎      const pl=$("pl-"+i+"-"+t.id),ki=$("ki-"+i+"-"+t.id),cp=$("cp-"+i+"-"+t.id);
+‎      if(pl)pl.value=String(x.placement||1);if(ki)ki.value=Number(x.kills||0);if(cp)cp.value=Number(x.compensation||0);
+‎      const chosen=new Set(x.participants||[]);
+‎      document.querySelectorAll(".part-"+CSS.escape(t.id)).forEach(el=>{el.checked=!chosen.size||chosen.has(el.value)});
+‎    }
+‎  });
+‎  $("matchFormTitle").textContent="修改已保存的五局比赛";$("saveMatchBtn").textContent="保存比赛修改";$("cancelMatchEdit").classList.remove("hidden");showTab("admin");$("matchName").focus();
+‎};
+‎window.cancelMatchEdit=()=>{
+‎  editingMatchId=null;selectedTeams=[];$("matchName").value="";$("matchDate").value=new Date().toISOString().slice(0,10);
+‎  $("matchFormTitle").textContent="创建五局比赛";$("saveMatchBtn").textContent="保存整场比赛（5 把）";$("cancelMatchEdit").classList.add("hidden");
+‎  renderPicker();renderParticipants();renderRounds();
+‎};
+‎window.saveMatch=async()=>{
+‎  if(!isAdmin)return alert("只有管理员可以操作");
+‎  const name=$("matchName").value.trim(),date=$("matchDate").value;
+‎  if(!name||!date)return alert("请填写比赛名称和日期");
+‎  if(!selectedTeams.length)return alert("请至少选择一支队伍");
+‎  const rounds=[];
+‎  for(let i=0;i<5;i++){
+‎    const results=[],usedPlacements=new Set();
+‎    for(const t of selectedTeams){
+‎      const chosen=[...document.querySelectorAll(".part-"+CSS.escape(t.id)+":checked")].map(x=>x.value);
+‎      if(chosen.length!==4)return alert(t.name+" 必须选择固定 4 名出战队员");
+‎      const placement=Number($("pl-"+i+"-"+t.id).value),ki=Number($("ki-"+i+"-"+t.id).value),compensation=Number($("cp-"+i+"-"+t.id).value||0);
+‎      if(usedPlacements.has(placement))return alert("第 "+(i+1)+" 把有重复排名（"+placement+" 名），请检查每支队伍的最终名次。");
+‎      usedPlacements.add(placement);
+‎      if(!Number.isInteger(ki)||ki<0||ki>99)return alert("淘汰数必须是 0–99 的整数");
+‎      if(!Number.isInteger(compensation)||compensation<0||compensation>99)return alert("补偿分必须是 0–99 的整数");
+‎      results.push({team:t.name,participants:chosen,placement,kills:ki,compensation});
+‎    }
+‎    rounds.push({map:$("map"+i).value,results});
+‎  }
+‎  try{
+‎    const data={name,date,rounds,updatedAt:serverTimestamp(),updatedBy:currentUser.uid,scoring:"PMGC_10_POINT"};
+‎    if(editingMatchId){await setDoc(doc(db,"matches",editingMatchId),data,{merge:true});cancelMatchEdit();await loadAll();alert("比赛资料已修改，排行榜已自动更新");}
+‎    else{await addDoc(collection(db,"matches"),{...data,createdAt:serverTimestamp(),createdBy:currentUser.uid});$("matchName").value="";selectedTeams=[];renderAll();await loadAll();alert("五局比赛已保存，PMGC 积分排行榜已自动更新");}
+‎  }catch(e){err(e)}
+‎};
+‎window.removeMatch=async id=>{if(!isAdmin||!confirm("确定删除这场比赛？删除后无法恢复。"))return;try{await deleteDoc(doc(db,"matches",id));if(editingMatchId===id)cancelMatchEdit();await loadAll()}catch(e){err(e)}};
+‎$("matchDate").value=new Date().toISOString().slice(0,10);
+‎renderParticipants();renderRounds();
+‎</script>
+‎</body>
+‎</html>
