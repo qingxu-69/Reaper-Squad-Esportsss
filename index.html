@@ -105,7 +105,7 @@ function renderAll(){
   $("teamList").innerHTML=teams.length?teams.map(t=>`<div class="teamcard"><div class="teamhead"><b>${esc(t.name)}</b><span class="tag">4 名队员</span></div><div class="players">${(t.players||[]).map(p=>`<span class="player">${esc(p)}</span>`).join("")}</div></div>`).join(""):'<div class="empty">管理员尚未登记队伍</div>';
   $("matchList").innerHTML=matches.length?matches.map(m=>{
     if(!m.rounds)return `<div class="matchcard"><b>${esc(m.name||"旧版比赛记录")}</b><span class="tag">旧版记录</span><p class="muted">${esc(m.date||"")} · 原始记录已保留</p></div>`;
-    // 当前比赛独立统计：每一把一行，并显示该局每支队伍的实际排名。
+    // 每场比赛独立统计：每一把一行，只显示局数和各队排名，不显示队伍名称。
     let totalKills=0,totalPlacement=0;
     const roundRows=m.rounds.map((r,i)=>{
       let roundKills=0,roundPlacement=0;
@@ -115,8 +115,8 @@ function renderAll(){
       }
       totalKills+=roundKills;
       totalPlacement+=roundPlacement;
-      const rankings=(r.results||[]).map(x=>`${esc(x.team)}：第${Number(x.placement||0)}名`).join("<br>")||"—";
-      return {label:`${m.name||"比赛"}M${i+1}`,rankings,kills:roundKills,placement:roundPlacement,total:roundKills+roundPlacement};
+      const rankings=(r.results||[]).map(x=>`第${Number(x.placement||0)}名`).join("<br>")||"—";
+      return {label:`M${i+1}`,rankings,kills:roundKills,placement:roundPlacement,total:roundKills+roundPlacement};
     });
     const grand=totalKills+totalPlacement;
     return `<div class="matchcard"><h4>${esc(m.name||"未命名比赛")} <span class="tag">${m.rounds.length} 把</span></h4><p class="muted">${esc(m.date||"")}</p><p>${m.rounds.map((r,i)=>`<span class="tag">第${i+1}把：${esc(r.map||"未指定地图")}</span>`).join("")}</p><div class="summary"><div><b>${totalPlacement}</b><span>总排名分</span></div><div><b>${totalKills}</b><span>总淘汰数</span></div><div><b>${grand}</b><span>总分</span></div></div><div class="tablewrap"><table><thead><tr><th>局数</th><th>当局排名</th><th>排名分</th><th>淘汰</th><th>总分</th></tr></thead><tbody>${roundRows.map(v=>`<tr><td><b>${esc(v.label)}</b></td><td>${v.rankings}</td><td>${v.placement}</td><td>${v.kills}</td><td class="rank">${v.total}</td></tr>`).join("")}<tr><th>总计</th><th>—</th><th>${totalPlacement}</th><th>${totalKills}</th><th class="rank">${grand}</th></tr></tbody></table></div></div>`;
