@@ -50,6 +50,8 @@ const firebaseConfig={
   measurementId:"G-MRKCHJ6B6E"
 };
 const ADMIN_UID="GmkehgoarFPEZk1Hmnl8Dh0X3Ui2";
+// 额外管理员 Google 账号（使用 Google 登录时匹配邮箱）
+const ADMIN_EMAILS=["ivanng11177@gmail.com"];
 const MAPS=["Erangel","Miramar","Sanhok","Vikendi","Livik","Rondo"];
 const PLACE_POINTS={1:10,2:6,3:5,4:4,5:3,6:2,7:1,8:1};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
@@ -66,7 +68,7 @@ window.signIn=async()=>{try{await setPersistence(auth,browserLocalPersistence);a
 window.signOutUser=async()=>{try{await signOut(auth)}catch(e){err(e)}};
 
 onAuthStateChanged(auth,async u=>{
-  currentUser=u;isAdmin=!!u&&u.uid===ADMIN_UID;
+  currentUser=u;isAdmin=!!u&&(u.uid===ADMIN_UID||ADMIN_EMAILS.includes(String(u.email||"").toLowerCase()));
   $("userLabel").textContent=u?(u.displayName||u.email||"已登录"):"访客模式";
   $("loginBtn").classList.toggle("hidden",!!u);$("logoutBtn").classList.toggle("hidden",!u);
   $("adminGate").classList.toggle("hidden",isAdmin);$("adminPanel").classList.toggle("hidden",!isAdmin);
